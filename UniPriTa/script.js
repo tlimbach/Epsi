@@ -4,32 +4,39 @@ window.onload = function () {
     const output = document.getElementById('output');
     const context = canvas.getContext('2d');
 
-    // Zugriff auf die Webcam
+    // Zugriff auf die Webcam, einschließlich mobiler Geräte
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
-            video.srcObject = stream;
+            if ('srcObject' in video) {
+                video.srcObject = stream;
+            } else {
+                // Fallback für ältere Browser
+                video.src = window.URL.createObjectURL(stream);
+            }
+            video.play();
         })
         .catch(error => {
             console.error('Kamera konnte nicht gestartet werden:', error);
+            output.innerText = "Kamera konnte nicht gestartet werden: " + error.message;
         });
-
-
 
     // Alle 2 Sekunden ein Bild von der Webcam erfassen und analysieren
     setInterval(() => {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        if (video.videoWidth && video.videoHeight) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/png');
 
-        // Schritt 1: Prüfen mit Tesseract.js
-        checkWithTesseract(imgData).then(isTextFound => {
-            if (isTextFound) {
-                // Schritt 2: Falls Text gefunden wird, OCR.Space API verwenden
-                checkWithOCRSpace(imgData);
-            }
-        });
+            // Schritt 1: Prüfen mit Tesseract.js
+            checkWithTesseract(imgData).then(isTextFound => {
+                if (isTextFound) {
+                    // Schritt 2: Falls Text gefunden wird, OCR.Space API verwenden
+                    checkWithOCRSpace(imgData);
+                }
+            });
+        }
     }, 2000);
 };
 
