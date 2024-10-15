@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract.js OCR from Webcam with Validation</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #video {
+            width: 640px;
+            height: 480px;
+            border: 1px solid black;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tesseract.js OCR Example with Validation</h1>
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="output">Recognized text will appear here...</div>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const output = document.getElementById('output');
+        const context = canvas.getContext('2d');
+
+        // Zugriff auf die Webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('Kamera konnte nicht gestartet werden:', error);
+            });
+
+        // Konvertiere Bild in Graustufen und verbessere den Kontrast
+        function preprocessImage(imageData) {
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const grayscale = 0.3 * data[i] + 0.59 * data[i + 1] + 0.11 * data[i + 2];
+                data[i] = grayscale;
+                data[i + 1] = grayscale;
+                data[i + 2] = grayscale;
+
+                const contrastFactor = 1.2;
+                data[i] = (data[i] - 128) * contrastFactor + 128;
+                data[i + 1] = (data[i + 1] - 128) * contrastFactor + 128;
+                data[i + 2] = (data[i + 2] - 128) * contrastFactor + 128;
+            }
+            return imageData;
+        }
+
+        // Alle 2 Sekunden ein Bild von der Webcam erfassen und analysieren
+        setInterval(() => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+          //  imageData = preprocessImage(imageData);
+            context.putImageData(imageData, 0, 0);
+
+            const imgData = canvas.toDataURL('image/png');
+            Tesseract.recognize(
+                imgData,
+                'deu',
+                { logger: (m) => console.log(m) }
+            ).then(({ data: { text } }) => {
+                // Überprüfe, ob der erkannte Text mindestens 5 aufeinanderfolgende Zeichen hat
+                if (text.match(/\w{5,}/)) {
+                    output.innerText = text;
+                } else {
+                    output.innerText = "Datenmüll";
+                }
+            }).catch(err => {
+                output.innerText = "Error: " + err;
+            });
+        }, 500);
+    </script>
+</body>
+</html>

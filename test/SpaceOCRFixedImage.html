@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR.space with Drag and Drop and Product Data Extraction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #image-preview {
+            width: 640px;
+            height: auto;
+            border: 1px solid black;
+            margin-top: 20px;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            width: 640px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+        #drop-area.dragover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>OCR.space with Product Data Extraction</h1>
+
+    <div id="drop-area">
+        <p>Drag & Drop an image here or click to select</p>
+        <input type="file" id="image-input" accept="image/*" style="display:none;">
+    </div>
+
+    <img id="image-preview" src="" alt="Image Preview" />
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="ocrResult">Recognized text will appear here...</div>
+    <div id="productData">
+        <p><strong>Produktname:</strong> <span id="productName">-</span></p>
+        <p><strong>Produktpreis:</strong> <span id="productPrice">-</span></p>
+        <p><strong>Produktgewicht:</strong> <span id="productWeight">-</span></p>
+        <p><strong>Preis pro Kg:</strong> <span id="pricePerKg">-</span></p>
+    </div>
+
+    <script src="script.js"></script> <!-- Verweis auf die externe Script-Datei -->
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const output = document.getElementById('ocrResult');
+        const productNameField = document.getElementById('productName');
+        const productPriceField = document.getElementById('productPrice');
+        const productWeightField = document.getElementById('productWeight');
+        const pricePerKgField = document.getElementById('pricePerKg');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            handleFile(file);
+        }
+
+        // Open file dialog when the drop area is clicked
+        dropArea.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        // Handle image input change
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            handleFile(file);
+        });
+
+        // Function to handle file
+        function handleFile(file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+
+                    // Warten, bis das Bild vollständig geladen ist
+                    imagePreview.onload = function() {
+                        // Setze die Größe des Canvas auf die Bildgröße
+                        canvas.width = imagePreview.width;
+                        canvas.height = imagePreview.height;
+
+                        // Zeichne das Bild auf das Canvas
+                        ctx.drawImage(imagePreview, 0, 0, canvas.width, canvas.height);
+
+                        // Hol das Bilddaten-URL des Canvas
+                        const imageDataURL = canvas.toDataURL("image/jpeg");
+
+                        // Entferne das Präfix der Data URL ("data:image/jpeg;base64,") für die API
+                        const imageBase64 = imageDataURL.split(',')[1];
+
+                        // API-Key von OCRSpace
+                        const apiKey = 'K87108113888957';  // Ersetze dies durch deinen echten API-Schlüssel
+
+                        // FormData für die API-Anfrage erstellen
+                        const formData = new FormData();
+                        formData.append('base64Image', 'data:image/jpeg;base64,' + imageBase64);
+                        formData.append('apikey', apiKey);
+                        formData.append('language', 'ger');  // Sprache der Texterkennung auf Deutsch setzen
+                        formData.append('isOverlayRequired', true);
+                        formData.append('OCREngine', 2);
+                        formData.append('isTable', true);
+
+                        // API-Aufruf an OCRSpace
+                        fetch('https://api.ocr.space/parse/image', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.IsErroredOnProcessing) {
+                                alert('Fehler bei der Verarbeitung: ' + data.ErrorMessage[0]);
+                            } else {
+                                // Vollständigen Text anzeigen
+                                output.innerText = "Erkannter Text:\n" + data.ParsedResults[0].ParsedText;
+
+                                // Zusätzliche Daten extrahieren
+                                const productPrice = extractProductPrice(data);
+                                const productWeight = extractProductWeight(data);
+                                const pricePerKg = calculatePricePerKg(productPrice, productWeight);
+                                const productName = extractProductName(data, productWeight);
+
+                                // Daten anzeigen
+                                productNameField.innerText = productName;
+                                productPriceField.innerText = productPrice;
+                                productWeightField.innerText = productWeight;
+                                pricePerKgField.innerText = pricePerKg;
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Fehler bei der Texterkennung:', error);
+                            alert('Fehler bei der Texterkennung. Siehe Konsole für Details.');
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>

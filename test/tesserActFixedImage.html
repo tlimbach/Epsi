@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesseract.js OCR from Image File with Drag and Drop</title>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #image-preview {
+            width: 640px;
+            height: auto;
+            border: 1px solid black;
+            margin-top: 20px;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            width: 640px;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+        #drop-area.dragover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tesseract.js OCR Example with Drag and Drop</h1>
+
+    <div id="drop-area">
+        <p>Drag & Drop an image here or click to select</p>
+        <input type="file" id="image-input" accept="image/*" style="display:none;">
+    </div>
+
+    <img id="image-preview" src="" alt="Image Preview" />
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="output">Recognized text will appear here...</div>
+
+    <script>
+        const dropArea = document.getElementById('drop-area');
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        const canvas = document.getElementById('canvas');
+        const output = document.getElementById('output');
+        const context = canvas.getContext('2d');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.add('dragover');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, () => {
+                dropArea.classList.remove('dragover');
+            }, false);
+        });
+
+        // Handle dropped files
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            handleFile(file);
+        }
+
+        // Open file dialog when the drop area is clicked
+        dropArea.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        // Handle image input change
+        imageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            handleFile(file);
+        });
+
+        // Function to handle file
+        function handleFile(file) {
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+
+                    // Warten, bis das Bild vollständig geladen ist
+                    imagePreview.onload = function() {
+                        // Setze die Größe des Canvas auf die Bildgröße
+                        canvas.width = imagePreview.width;
+                        canvas.height = imagePreview.height;
+
+                        // Zeichne das Bild auf das Canvas
+                        context.drawImage(imagePreview, 0, 0, canvas.width, canvas.height);
+
+                        // Hol das Bilddaten-URL des Canvas
+                        const imgData = canvas.toDataURL('image/png');
+
+                        // OCR mit Tesseract.js durchführen
+                        Tesseract.recognize(
+                            imgData,
+                            'deu',
+                            { logger: (m) => console.log(m) }
+                        ).then(({ data: { text } }) => {
+                            // Überprüfe, ob der erkannte Text mindestens 5 aufeinanderfolgende Zeichen hat
+                           // if (text.match(/\w{5,}/)) {
+                            //    output.innerText = text;
+                            // } else {
+                            //    output.innerText = "Datenmüll";
+                           //  }
+                           output.innerText = text;
+                        }).catch(err => {
+                            output.innerText = "Error: " + err;
+                        });
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</body>
+</html>
