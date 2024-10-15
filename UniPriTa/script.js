@@ -49,8 +49,6 @@ function checkWithTesseract(imgData) {
     });
 }
 
-erst neue Erkennung (auch mit TesserAct) starten, wenn vorher wieder "Datenmüll" erkannt wurde.
-
 
 // OCR.Space API-Aufruf für genaue Texterkennung
 function checkWithOCRSpace(imgData) {
