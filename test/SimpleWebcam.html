@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Webcam Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #video {
+            width: 640px;
+            height: 480px;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Webcam Example</h1>
+    <video id="video" autoplay playsinline muted></video> <!-- playsinline und muted für mobiles Abspielen -->
+
+    <script>
+        const video = document.getElementById('video');
+
+        // Webcam-Zugriff
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('Kamera konnte nicht gestartet werden:', error);
+            });
+    </script>
+</body>
+</html>
