@@ -60,7 +60,7 @@ function checkWithTesseract(imgData) {
         if (text.match(/\w{7,}/)) {
             return true;  // Text gefunden
         } else {
-            output.innerText = "Datenmüll";
+            logMessage("Datenmüll");
             return false;  // Kein Text gefunden
         }
     });
@@ -88,13 +88,13 @@ function checkWithOCRSpace(imgData) {
            evaluateSpaceData(data);
         })
         .catch(err => {
-            output.innerText = "Error with OCR.Space API: " + err;
+            logMessage("Error with OCR.Space API: " + err);
         });
 }
 
 function evaluateSpaceData(data) {
     const parsedText = data.ParsedResults[0].ParsedText;
-    output.innerText = "OCR.Space Result: " + parsedText;
+    logMessage("OCR.Space Result: " + parsedText);
 }
 
 
