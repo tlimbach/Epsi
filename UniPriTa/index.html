@@ -15,6 +15,9 @@
             width: 640px;
             height: 480px;
             border: 1px solid black;
+            /* Mache das Video responsiv */
+            max-width: 100%;
+            height: auto;
         }
         #output {
             margin-top: 20px;
@@ -25,7 +28,7 @@
 </head>
 <body>
     <h1>OCR with Tesseract.js & OCR.Space</h1>
-    <video id="video" autoplay></video>
+    <video id="video" autoplay playsinline muted></video> <!-- playsinline und muted hinzugefügt -->
     <canvas id="canvas" style="display:none;"></canvas>
     <div id="output">Recognized text will appear here...</div>
 </body>
