@@ -9,8 +9,11 @@ window.onload = function () {
         output.innerText += message + '\n'; // Fügt die Nachricht zum Textinhalt des 'output'-Divs hinzu
     }
 
-    // Zugriff auf die Webcam, einschließlich mobiler Geräte
-    navigator.mediaDevices.getUserMedia({ video: true })
+    // Funktion zum Starten des Webcam-Streams
+    function startWebcam(facingMode) {
+        navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode }  // Kamera-Einstellung
+        })
         .then(stream => {
             if ('srcObject' in video) {
                 video.srcObject = stream; // Neuere Browser und iPhones
@@ -19,11 +22,20 @@ window.onload = function () {
                 video.src = window.URL.createObjectURL(stream);
             }
             video.play();
-            logMessage('Kamera gestartet.');
+            logMessage('Kamera gestartet: ' + facingMode);
         })
         .catch(error => {
-            logMessage('Kamera konnte nicht gestartet werden: ' + error.message);
+            logMessage('Kamera mit "' + facingMode + '" konnte nicht gestartet werden: ' + error.message);
+            // Rückfall auf die Frontkamera, falls die Rückkamera nicht verfügbar ist
+            if (facingMode === "environment") {
+                logMessage('Wechsel zur Frontkamera.');
+                startWebcam("user");  // Frontkamera verwenden, wenn Rückkamera fehlschlägt
+            }
         });
+    }
+
+    // Versuche, die Rückseitige Kamera zu starten
+    startWebcam("environment");
 
     // Alle 2 Sekunden ein Bild von der Webcam erfassen und analysieren
     setInterval(() => {
