@@ -34,6 +34,7 @@ window.onload = function () {
 
             const imgData = canvas.toDataURL('image/png');
             logMessage('Bild von der Webcam aufgenommen.');
+            logMessage('Bildgröße: ' + canvas.width + 'x' + canvas.height + ' Pixel.');
 
             // Schritt 1: Prüfen mit Tesseract.js
             checkWithTesseract(imgData).then(isTextFound => {
