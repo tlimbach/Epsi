@@ -4,20 +4,25 @@ window.onload = function () {
     const output = document.getElementById('output');
     const context = canvas.getContext('2d');
 
+    // Funktion zum Protokollieren von Nachrichten auf der HTML-Seite
+    function logMessage(message) {
+        output.innerText += message + '\n'; // Fügt die Nachricht zum Textinhalt des 'output'-Divs hinzu
+    }
+
     // Zugriff auf die Webcam, einschließlich mobiler Geräte
     navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
             if ('srcObject' in video) {
-                video.srcObject = stream;
+                video.srcObject = stream; // Neuere Browser und iPhones
             } else {
                 // Fallback für ältere Browser
                 video.src = window.URL.createObjectURL(stream);
             }
             video.play();
+            logMessage('Kamera gestartet.');
         })
         .catch(error => {
-            console.error('Kamera konnte nicht gestartet werden:', error);
-            output.innerText = "Kamera konnte nicht gestartet werden: " + error.message;
+            logMessage('Kamera konnte nicht gestartet werden: ' + error.message);
         });
 
     // Alle 2 Sekunden ein Bild von der Webcam erfassen und analysieren
@@ -28,17 +33,22 @@ window.onload = function () {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imgData = canvas.toDataURL('image/png');
+            logMessage('Bild von der Webcam aufgenommen.');
 
             // Schritt 1: Prüfen mit Tesseract.js
             checkWithTesseract(imgData).then(isTextFound => {
                 if (isTextFound) {
+                    logMessage('Text erkannt, OCR.Space API wird verwendet.');
                     // Schritt 2: Falls Text gefunden wird, OCR.Space API verwenden
                     checkWithOCRSpace(imgData);
+                } else {
+                    logMessage('Kein Text erkannt.');
                 }
             });
         }
     }, 2000);
 };
+
 
 // Tesseract.js verwendet, um zu prüfen, ob Text vorhanden ist
 function checkWithTesseract(imgData) {
