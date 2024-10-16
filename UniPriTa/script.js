@@ -1,3 +1,5 @@
+let zuletztDatenMuellerkannt = true;
+
 window.onload = function () {
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -44,16 +46,22 @@ window.onload = function () {
             // Schritt 1: Prüfen mit Tesseract.js
             checkWithTesseract(imgData).then(isTextFound => {
                 if (isTextFound) {
-                    console.log('Text erkannt. Aufnahme eines hochauflösenden Fotos.');
-                    // Schritt 2: Machen eines hochauflösenden Fotos und Weitergabe an OCR.Space API
+                    console.log('Text erkannt.');
                 //    takeHighResPhotoAndSendToOC/RSpace();
+
+                if (zuletztDatenMuellerkannt) {
+                    zuletztDatenMuellerkannt = false;
                     checkWithOCRSpace(imgData);
+                    } else {
+                        console.log("Aber immernoch gleiches Bild...");
+                    }
                 } else {
+                    zuletztDatenMuellerkannt = true;
                     console.log('Kein Text erkannt.');
                 }
             });
         }
-    }, 1500);
+    }, 550);
 };
 
 // Tesseract.js verwendet, um zu prüfen, ob Text vorhanden ist
@@ -108,6 +116,7 @@ function takeHighResPhotoAndSendToOCRSpace() {
 
 
 function checkWithOCRSpace(imgData) {
+    console.log("Check with OCR....");
     const formData = new FormData();
     formData.append("base64Image", imgData);
     formData.append("language", "ger");
