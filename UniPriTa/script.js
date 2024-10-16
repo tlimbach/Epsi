@@ -40,15 +40,13 @@ window.onload = function () {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imgData = canvas.toDataURL('image/png');
-//            console.log('Bild von der Webcam aufgenommen.');
-//            console.log('Bildgröße: ' + canvas.width + 'x' + canvas.height + ' Pixel.');
 
             // Schritt 1: Prüfen mit Tesseract.js
             checkWithTesseract(imgData).then(isTextFound => {
                 if (isTextFound) {
-                    console.log('Text erkannt, OCR.Space API wird verwendet.');
-                    // Schritt 2: Falls Text gefunden wird, OCR.Space API verwenden
-                    checkWithOCRSpace(imgData);
+                    console.log('Text erkannt. Aufnahme eines hochauflösenden Fotos.');
+                    // Schritt 2: Machen eines hochauflösenden Fotos und Weitergabe an OCR.Space API
+                    takeHighResPhotoAndSendToOCRSpace();
                 } else {
                     console.log('Kein Text erkannt.');
                 }
@@ -57,13 +55,11 @@ window.onload = function () {
     }, 2000);
 };
 
-
 // Tesseract.js verwendet, um zu prüfen, ob Text vorhanden ist
 function checkWithTesseract(imgData) {
     return Tesseract.recognize(
         imgData,
-        'deu', // Verwende die deutsche Sprachdatei
-        { logger: (m) => console.log(m) }
+        'deu'  // Verwende die deutsche Sprachdatei
     ).then(({ data: { text } }) => {
         if (text.match(/\w{7,}/)) {
             return true;  // Text gefunden
@@ -75,7 +71,41 @@ function checkWithTesseract(imgData) {
 }
 
 
-// OCR.Space API-Aufruf für genaue Texterkennung
+// Funktion zum Aufnehmen eines hochauflösenden Fotos
+function takeHighResPhotoAndSendToOCRSpace() {
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+    })
+    .then(stream => {
+        const photoCanvas = document.createElement('canvas');
+        const photoContext = photoCanvas.getContext('2d');
+        const video = document.createElement('video');
+
+        video.srcObject = stream;
+        video.play();
+
+        video.onloadedmetadata = () => {
+            photoCanvas.width = video.videoWidth;
+            photoCanvas.height = video.videoHeight;
+
+            photoContext.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+
+            // Reduziere die Qualität des Bildes auf 0.7 (70%)
+            const photoData = photoCanvas.toDataURL('image/jpeg', 0.7);  // JPEG-Bild mit 70% Qualität
+
+            // Stoppe den Stream nach der Fotoaufnahme
+            stream.getTracks().forEach(track => track.stop());
+
+            // Sende das komprimierte Bild an OCR.Space
+            checkWithOCRSpace(photoData);
+        };
+    })
+    .catch(error => {
+        console.log('Fehler beim Aufnehmen des Fotos: ' + error.message);
+    });
+}
+
+
 function checkWithOCRSpace(imgData) {
     const formData = new FormData();
     formData.append("base64Image", imgData);
@@ -91,14 +121,23 @@ function checkWithOCRSpace(imgData) {
         },
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-           evaluateSpaceData(data);
-        })
-        .catch(err => {
-            console.log("Error with OCR.Space API: " + err);
-        });
+    .then(response => response.json())
+    .then(data => {
+        // Ausgabe der gesamten API-Antwort zur Diagnose
+        console.log("OCR.Space API Antwort:", data);
+
+        // Überprüfen, ob ParsedResults existiert und ob es Ergebnisse enthält
+        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            evaluateSpaceData(data);
+        } else {
+            output.innerText = "Fehler: Keine Ergebnisse von OCR.Space erhalten.";
+        }
+    })
+    .catch(err => {
+        console.log("Fehler bei OCR.Space API: " + err);
+    });
 }
+
 
 function evaluateSpaceData(data) {
     const parsedText = data.ParsedResults[0].ParsedText;
