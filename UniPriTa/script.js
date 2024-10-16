@@ -4,11 +4,6 @@ window.onload = function () {
     const output = document.getElementById('output');
     const context = canvas.getContext('2d');
 
-    // Funktion zum Protokollieren von Nachrichten auf der HTML-Seite
-    function logMessage(message) {
-        output.innerText += message + '\n'; // Fügt die Nachricht zum Textinhalt des 'output'-Divs hinzu
-    }
-
     // Funktion zum Starten des Webcam-Streams
     function startWebcam(facingMode) {
         navigator.mediaDevices.getUserMedia({
@@ -22,13 +17,13 @@ window.onload = function () {
                 video.src = window.URL.createObjectURL(stream);
             }
             video.play();
-            logMessage('Kamera gestartet: ' + facingMode);
+            console.log('Kamera gestartet: ' + facingMode);
         })
         .catch(error => {
-            logMessage('Kamera mit "' + facingMode + '" konnte nicht gestartet werden: ' + error.message);
+            console.log('Kamera mit "' + facingMode + '" konnte nicht gestartet werden: ' + error.message);
             // Rückfall auf die Frontkamera, falls die Rückkamera nicht verfügbar ist
             if (facingMode === "environment") {
-                logMessage('Wechsel zur Frontkamera.');
+                console.log('Wechsel zur Frontkamera.');
                 startWebcam("user");  // Frontkamera verwenden, wenn Rückkamera fehlschlägt
             }
         });
@@ -45,17 +40,17 @@ window.onload = function () {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
             const imgData = canvas.toDataURL('image/png');
-            logMessage('Bild von der Webcam aufgenommen.');
-            logMessage('Bildgröße: ' + canvas.width + 'x' + canvas.height + ' Pixel.');
+//            console.log('Bild von der Webcam aufgenommen.');
+//            console.log('Bildgröße: ' + canvas.width + 'x' + canvas.height + ' Pixel.');
 
             // Schritt 1: Prüfen mit Tesseract.js
             checkWithTesseract(imgData).then(isTextFound => {
                 if (isTextFound) {
-                    logMessage('Text erkannt, OCR.Space API wird verwendet.');
+                    console.log('Text erkannt, OCR.Space API wird verwendet.');
                     // Schritt 2: Falls Text gefunden wird, OCR.Space API verwenden
                     checkWithOCRSpace(imgData);
                 } else {
-                    logMessage('Kein Text erkannt.');
+                    console.log('Kein Text erkannt.');
                 }
             });
         }
@@ -73,7 +68,7 @@ function checkWithTesseract(imgData) {
         if (text.match(/\w{7,}/)) {
             return true;  // Text gefunden
         } else {
-            logMessage("Datenmüll");
+            output.innerText = "Datenmüll";
             return false;  // Kein Text gefunden
         }
     });
@@ -101,13 +96,13 @@ function checkWithOCRSpace(imgData) {
            evaluateSpaceData(data);
         })
         .catch(err => {
-            logMessage("Error with OCR.Space API: " + err);
+            console.log("Error with OCR.Space API: " + err);
         });
 }
 
 function evaluateSpaceData(data) {
     const parsedText = data.ParsedResults[0].ParsedText;
-    logMessage("OCR.Space Result: " + parsedText);
+    output.innerText = "OCR.Space Result: " + parsedText;
 }
 
 
