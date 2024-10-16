@@ -53,7 +53,7 @@ window.onload = function () {
                 }
             });
         }
-    }, 500);
+    }, 1500);
 };
 
 // Tesseract.js verwendet, um zu prüfen, ob Text vorhanden ist
