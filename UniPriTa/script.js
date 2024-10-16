@@ -46,13 +46,14 @@ window.onload = function () {
                 if (isTextFound) {
                     console.log('Text erkannt. Aufnahme eines hochauflösenden Fotos.');
                     // Schritt 2: Machen eines hochauflösenden Fotos und Weitergabe an OCR.Space API
-                    takeHighResPhotoAndSendToOCRSpace();
+                //    takeHighResPhotoAndSendToOC/RSpace();
+                    checkWithOCRSpace(imgData);
                 } else {
                     console.log('Kein Text erkannt.');
                 }
             });
         }
-    }, 300);
+    }, 500);
 };
 
 // Tesseract.js verwendet, um zu prüfen, ob Text vorhanden ist
