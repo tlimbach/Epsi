@@ -7,6 +7,7 @@ function takePhoto() {
 
     isProcessing = true;
 
+
     const width = 1920; // FullHD (Originalauflösung)
     const height = 1080; // FullHD (Originalauflösung)
 
@@ -19,47 +20,49 @@ function takePhoto() {
                     textOutput.innerHTML = '';
 
                     const imgURL = URL.createObjectURL(blob);
-
                     const img = new Image();
                     img.src = imgURL;
                     img.onload = () => {
-                        // Erst auf HD runterskalieren
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
-                        canvas.width = 1280; // HD-Breite
-                        canvas.height = 720; // HD-Höhe
 
-                        // Skaliere das Bild auf HD-Größe
-                        context.drawImage(img, 0, 0, 1280, 720);
+                        const aspectRatio = img.width / img.height;
+                        let scaledWidth = 1280;
+                        let scaledHeight = 720;
 
-                        // Zuschneiden des Bildes um 20% oben und unten (HD-Bild)
+                        // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
+                        if (img.width < img.height) {
+                            // Hochkant
+                            scaledWidth = 720;
+                            scaledHeight = 1280;
+                        }
+
+                        canvas.width = scaledWidth;
+                        canvas.height = scaledHeight;
+
+                        // Skaliere das Bild
+                        context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+
+                        // Zuschneiden des Bildes um 20% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
-                        croppedCanvas.width = canvas.width; // HD-Breite
-                        croppedCanvas.height = canvas.height * 0.6; // 60% der HD-Höhe
+                        croppedCanvas.width = canvas.width;
+                        croppedCanvas.height = canvas.height * 0.6;
 
                         // Zeichne nur den mittleren 60%-Bereich des Bildes
                         croppedContext.drawImage(canvas, 0, canvas.height * 0.2, canvas.width, canvas.height * 0.6, 0, 0, croppedCanvas.width, croppedCanvas.height);
 
-                        let compressionFactor = 0.5;
-
-                        /// Zeige das zugeschnittene Bild auf der Seite an
-                        photo.src = croppedCanvas.toDataURL('image/jpeg', compressionFactor); // 70% Qualität
-                        photo.style.width = '800px'; // Zeige es in 800px Breite an
+                        // Zeige das zugeschnittene Bild auf der Seite an
+                        photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
+                        photo.style.width = '100%'; // Passt das Bild an den Bildschirm an
 
                         // Zeige die Auflösung und Dateigröße
-                        console.log(`Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height}`);
                         textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
+                        const fileSizeKB = (blob.size / 1024).toFixed(2);
+                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
 
                         // Komprimiere das Bild für Tesseract
-                        const compressedImageData = croppedCanvas.toDataURL('image/jpeg', compressionFactor); // 70% Qualität für Tesseract
-
-                        fetch(compressedImageData)
-                        .then(res => res.blob())
-                        .then(blob => {
-                            const fileSizeKB = (blob.size / 1024).toFixed(2);
-                            textOutput.innerHTML += `Dateigröße (komprimiert): ${fileSizeKB} KB<br>`;
-                        });
+                        const compressedImageData = croppedCanvas.toDataURL('image/jpeg', 0.7);
 
                         // Sende das komprimierte Bild an Tesseract
                         processWithTesseract(compressedImageData);

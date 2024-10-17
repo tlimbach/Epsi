@@ -11,17 +11,11 @@
             font-family: Arial, sans-serif;
             text-align: center;
         }
-        #photoDiv {
-            width: 100%;
-            margin: 20px auto;
-        }
-
         #photo {
-    width: 80%; /* Bild passt sich vollständig an die Bildschirmbreite an */
-    height: auto; /* Erhält das Seitenverhältnis */
-    max-width: 80%; /* Begrenze die Breite auf die Breite des Viewports */
-}
-
+          object-fit: contain;
+          max-width: 100%; /* Passt das Bild dynamisch an die Bildschirmbreite an */
+          height: auto; /* Erhält das Seitenverhältnis */
+        }
         #output {
             margin-top: 20px;
             font-size: 18px;
@@ -32,8 +26,7 @@
 <body>
     <h1>Foto und Tesseract.js OCR</h1>
 
-        <img id="photo" src="" alt="Foto wird geladen...">
-
-    <div id="textOutput">Erkannter Dext wird hier angezeigt...</div>
+    <img id="photo" src="" alt="Foto wird geladen...">
+    <div id="textOutput">Erkannter Text wird hier angezeigt...</div>
 </body>
 </html>
