@@ -42,18 +42,28 @@ function takePhoto() {
                         // Zeichne nur den mittleren 60%-Bereich des Bildes
                         croppedContext.drawImage(canvas, 0, canvas.height * 0.2, canvas.width, canvas.height * 0.6, 0, 0, croppedCanvas.width, croppedCanvas.height);
 
-                        // Zeige das zugeschnittene Bild auf der Seite an
-                        photo.src = croppedCanvas.toDataURL('image/png');
+                        let compressionFactor = 0.5;
+
+                        /// Zeige das zugeschnittene Bild auf der Seite an
+                        photo.src = croppedCanvas.toDataURL('image/jpeg', compressionFactor); // 70% Qualität
                         photo.style.width = '800px'; // Zeige es in 800px Breite an
 
                         // Zeige die Auflösung und Dateigröße
-                        console.log(`Foto-Auflösung: ${img.width}x${img.height}`);
+                        console.log(`Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height}`);
                         textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
-                        const fileSizeKB = (blob.size / 1024).toFixed(2);
-                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
 
-                        // Sende das zugeschnittene Bild an Tesseract
-                        processWithTesseract(croppedCanvas.toDataURL('image/png'));
+                        // Komprimiere das Bild für Tesseract
+                        const compressedImageData = croppedCanvas.toDataURL('image/jpeg', compressionFactor); // 70% Qualität für Tesseract
+
+                        fetch(compressedImageData)
+                        .then(res => res.blob())
+                        .then(blob => {
+                            const fileSizeKB = (blob.size / 1024).toFixed(2);
+                            textOutput.innerHTML += `Dateigröße (komprimiert): ${fileSizeKB} KB<br>`;
+                        });
+
+                        // Sende das komprimierte Bild an Tesseract
+                        processWithTesseract(compressedImageData);
                     };
 
                     stream.getTracks().forEach(track => track.stop());
