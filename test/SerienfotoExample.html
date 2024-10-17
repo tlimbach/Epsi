@@ -3,29 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Echte Fotos alle 1000ms</title>
+    <title>Take a Photo</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            margin-top: 50px;
         }
-        #photoContainer {
-            margin-top: 20px;
+        #photo {
             width: 640px;
-            height: 480px;
+            height: auto;
             border: 1px solid black;
-        }
-        #output {
             margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Echte Fotos in Intervallen</h1>
-    <div id="photoContainer"></div>
-    <div id="output">Fotos werden hier angezeigt...</div>
-    <script src="SerienfotoExample.js"></script>
+
+<h1>Take a Photo</h1>
+<button id="take-photo-btn">Take Photo</button>
+<canvas id="canvas" style="display:none;"></canvas>
+<img id="photo" alt="Your photo will appear here" />
+
+<script>
+    const takePhotoBtn = document.getElementById('take-photo-btn');
+    const canvas = document.getElementById('canvas');
+    const photo = document.getElementById('photo');
+    const context = canvas.getContext('2d');
+
+    // Funktion zum Aufnehmen eines Fotos mit der Rückkamera
+    function takePhoto() {
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: 'environment', // Rückseitige Kamera verwenden
+                width: { ideal: 1280 },    // HD-Auflösung
+                height: { ideal: 720 }     // HD-Auflösung
+            }
+        })
+        .then(stream => {
+            const videoTrack = stream.getVideoTracks()[0];
+            const imageCapture = new ImageCapture(videoTrack);
+
+            // Nimm ein Foto auf
+            imageCapture.takePhoto()
+            .then(blob => {
+                const imgURL = URL.createObjectURL(blob);
+                photo.src = imgURL; // Zeige das Foto im <img> Element an
+
+                // Foto auf dem Canvas anzeigen (optional)
+                const img = new Image();
+                img.onload = () => {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    context.drawImage(img, 0, 0);
+                };
+                img.src = imgURL;
+
+                // Video-Stream stoppen
+                stream.getTracks().forEach(track => track.stop());
+            })
+            .catch(error => {
+                console.error('Fehler beim Aufnehmen des Fotos:', error);
+            });
+        })
+        .catch(error => {
+            console.error('Fehler beim Zugriff auf die Kamera:', error);
+        });
+    }
+
+    // Event Listener für die Schaltfläche
+    takePhotoBtn.addEventListener('click', takePhoto);
+</script>
+
 </body>
 </html>
