@@ -1,7 +1,7 @@
 const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const context = canvas.getContext('2d');
-const photoContainer = document.getElementById('photoContainer');
+const photoElement = document.getElementById('photo'); // Hier wird das Bild eingefügt
 
 function startVideoStream(facingMode = 'environment') {
     navigator.mediaDevices.getUserMedia({
@@ -33,10 +33,8 @@ function capturePhoto() {
     // Konvertiere Canvas in ein Bild
     const imgData = canvas.toDataURL('image/png');
 
-    // Füge das Bild als <img> Tag hinzu
-    const imgElement = document.createElement('img');
-    imgElement.src = imgData;
-    photoContainer.appendChild(imgElement);
+    // Setze das Bild als Quelle für das <img> Tag
+    photoElement.src = imgData;
 }
 
 // Starte den Video-Stream
