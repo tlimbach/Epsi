@@ -15,11 +15,13 @@
             width: 800px;
             margin: 20px auto;
         }
+
         #photo {
-          object-fit: contain;
-          width: 100%; /* Passt das Bild dynamisch an die Bildschirmbreite an */
-          height: auto; /* Erhält das Seitenverhältnis */
-        }
+    width: 100%; /* Bild passt sich vollständig an die Bildschirmbreite an */
+    height: auto; /* Erhält das Seitenverhältnis */
+    max-width: 100vw; /* Begrenze die Breite auf die Breite des Viewports */
+}
+
         #output {
             margin-top: 20px;
             font-size: 18px;
