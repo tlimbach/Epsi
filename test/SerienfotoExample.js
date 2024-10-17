@@ -107,7 +107,8 @@ function processWithTesseract(imageData) {
     Tesseract.recognize(imageData, 'deu', {
         //tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-        tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Automatische Segmentierung für mehrere Textblöcke
+        //tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Automatische Segmentierung für mehrere Textblöcke
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE, // Automatische Segmentierung für mehrere Textblöcke
         logger: m => console.log(m)
     })
         .then(({ data: { text } }) => {
