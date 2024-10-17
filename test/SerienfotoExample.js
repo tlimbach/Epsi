@@ -1,36 +1,22 @@
+let videoTrack; // Speichert den Videotrack
+let imageCapture; // Für die Bildaufnahme
 const photoContainer = document.getElementById('photoContainer');
 const output = document.getElementById('output');
 
-// Funktion zum Aufnehmen eines Fotos in HD-Qualität ohne Videostream
-function takePhotoAndAnalyze(facingMode = 'environment') {
+// Startet den Kamerastream und richtet ImageCapture ein
+function startCamera(facingMode = 'environment') {
     navigator.mediaDevices.getUserMedia({
         video: {
-            facingMode: facingMode,
-            width: { ideal: 1280 },  // HD-Auflösung
-            height: { ideal: 720 }   // HD-Auflösung
+            facingMode: facingMode, // Rückseitige Kamera
+            width: { ideal: 1280 }, // HD-Auflösung
+            height: { ideal: 720 }  // HD-Auflösung
         }
     })
     .then(stream => {
-        const videoTrack = stream.getVideoTracks()[0];
-        const imageCapture = new ImageCapture(videoTrack);
-
-        // Fotoaufnahme
-        imageCapture.takePhoto().then(blob => {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(blob);
-
-            // Ersetze das vorherige Foto durch das neue
-            photoContainer.innerHTML = '';  // Lösche vorherigen Inhalt
-            photoContainer.appendChild(img);
-
-            output.innerText = "Neues Foto aufgenommen: " + new Date().toLocaleTimeString();
-
-            // Stream stoppen nach der Fotoaufnahme
-            stream.getTracks().forEach(track => track.stop());
-        }).catch(error => {
-            console.error('Fehler beim Aufnehmen des Fotos:', error);
-            output.innerText = "Fehler beim Aufnehmen des Fotos: " + error.message;
-        });
+        videoTrack = stream.getVideoTracks()[0];
+        imageCapture = new ImageCapture(videoTrack);
+        console.log('Kamera gestartet: ' + facingMode);
+        output.innerText = 'Kamera gestartet.';
     })
     .catch(error => {
         console.log(`Kamera mit "${facingMode}" konnte nicht gestartet werden: ${error.message}`);
@@ -38,5 +24,27 @@ function takePhotoAndAnalyze(facingMode = 'environment') {
     });
 }
 
-// Alle 1000 ms ein echtes Foto aufnehmen
-setInterval(() => takePhotoAndAnalyze(), 1000);
+// Nimmt ein Foto auf und zeigt es an
+function takePhoto() {
+    if (imageCapture) {
+        imageCapture.takePhoto().then(blob => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(blob);
+
+            // Ersetze das vorherige Foto durch das neue
+            photoContainer.innerHTML = '';  // Lösche vorheriges Bild
+            photoContainer.appendChild(img);
+
+            output.innerText = "Neues Foto aufgenommen: " + new Date().toLocaleTimeString();
+        }).catch(error => {
+            console.error('Fehler beim Aufnehmen des Fotos:', error);
+            output.innerText = "Fehler beim Aufnehmen des Fotos: " + error.message;
+        });
+    }
+}
+
+// Starte die Kamera beim Laden der Seite
+startCamera();
+
+// Nimm alle 1000 ms ein neues Foto auf
+setInterval(takePhoto, 1000);
