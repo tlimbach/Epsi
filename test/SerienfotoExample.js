@@ -7,7 +7,6 @@ function takePhoto() {
 
     isProcessing = true;
 
-    const useHD = document.getElementById('resolutionSwitch').checked;
     const width = 1920; // FullHD (Originalauflösung)
     const height = 1080; // FullHD (Originalauflösung)
 
