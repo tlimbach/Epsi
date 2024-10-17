@@ -7,7 +7,6 @@ function takePhoto() {
 
     isProcessing = true;
 
-
     const width = 1920; // FullHD (Originalauflösung)
     const height = 1080; // FullHD (Originalauflösung)
 
@@ -32,7 +31,7 @@ function takePhoto() {
 
                         // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
                         if (img.width < img.height) {
-                            // Hochkant
+                            // Hochkant: 35% oben und unten weg
                             scaledWidth = 720;
                             scaledHeight = 1280;
                         }
@@ -43,14 +42,20 @@ function takePhoto() {
                         // Skaliere das Bild
                         context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
-                        // Zuschneiden des Bildes um 20% oben und unten
+                        // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
-                        croppedCanvas.width = canvas.width;
-                        croppedCanvas.height = canvas.height * 0.6;
-
-                        // Zeichne nur den mittleren 60%-Bereich des Bildes
-                        croppedContext.drawImage(canvas, 0, canvas.height * 0.2, canvas.width, canvas.height * 0.6, 0, 0, croppedCanvas.width, croppedCanvas.height);
+                        if (img.width < img.height) {
+                            // Hochkant
+                            croppedCanvas.width = canvas.width;
+                            croppedCanvas.height = canvas.height * 0.3; // 30% der Hochkant-Höhe bleibt
+                            croppedContext.drawImage(canvas, 0, canvas.height * 0.35, canvas.width, canvas.height * 0.3, 0, 0, croppedCanvas.width, croppedCanvas.height);
+                        } else {
+                            // Querformat
+                            croppedCanvas.width = canvas.width;
+                            croppedCanvas.height = canvas.height * 0.6; // 60% der HD-Höhe bleibt
+                            croppedContext.drawImage(canvas, 0, canvas.height * 0.2, canvas.width, canvas.height * 0.6, 0, 0, croppedCanvas.width, croppedCanvas.height);
+                        }
 
                         // Zeige das zugeschnittene Bild auf der Seite an
                         photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
