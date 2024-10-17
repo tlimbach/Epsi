@@ -1,50 +1,60 @@
-let videoTrack; // Speichert den Videotrack
-let imageCapture; // Für die Bildaufnahme
-const photoContainer = document.getElementById('photoContainer');
-const output = document.getElementById('output');
+const photo = document.getElementById('photo');
+const textOutput = document.getElementById('textOutput');
 
-// Startet den Kamerastream und richtet ImageCapture ein
-function startCamera(facingMode = 'environment') {
-    navigator.mediaDevices.getUserMedia({
-        video: {
-            facingMode: facingMode, // Rückseitige Kamera
-            width: { ideal: 1280 }, // HD-Auflösung
-            height: { ideal: 720 }  // HD-Auflösung
-        }
-    })
-    .then(stream => {
-        videoTrack = stream.getVideoTracks()[0];
-        imageCapture = new ImageCapture(videoTrack);
-        console.log('Kamera gestartet: ' + facingMode);
-        output.innerText = 'Kamera gestartet.';
-    })
-    .catch(error => {
-        console.log(`Kamera mit "${facingMode}" konnte nicht gestartet werden: ${error.message}`);
-        output.innerText = `Kamera mit "${facingMode}" konnte nicht gestartet werden: ${error.message}`;
+function takePhoto() {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } })
+        .then(stream => {
+            const track = stream.getVideoTracks()[0];
+            const imageCapture = new ImageCapture(track);
+            imageCapture.takePhoto()
+                .then(blob => {
+                    // Löscht den vorherigen Output
+                    textOutput.innerHTML = '';
+
+                    const imgURL = URL.createObjectURL(blob);
+                    photo.src = imgURL;
+                    photo.style.width = '800px'; // Setzt die Breite des Bildes auf 800px
+
+                    // Zeige die Auflösung des Fotos an
+                    const img = new Image();
+                    img.src = imgURL;
+                    img.onload = () => {
+                        console.log(`Foto-Auflösung: ${img.width}x${img.height}`);
+                        textOutput.innerHTML += `Foto-Auflösung: ${img.width}x${img.height}<br>`;
+                    };
+
+                    // Berechne die Dateigröße des Fotos
+                    const fileSizeKB = (blob.size / 1024).toFixed(2);
+                    console.log(`Dateigröße: ${fileSizeKB} KB`);
+                    textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
+
+                    // Wandelt das Bild-Blob in eine Base64-Daten-URL um
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        const base64data = reader.result;
+                        processWithTesseract(base64data);
+                    };
+
+                    // Stop stream to free resources
+                    stream.getTracks().forEach(track => track.stop());
+                })
+                .catch(error => console.error('Fotoaufnahme fehlgeschlagen:', error));
+        })
+        .catch(error => console.error('Kamera konnte nicht gestartet werden:', error));
+}
+
+function processWithTesseract(imageData) {
+    Tesseract.recognize(
+        imageData,
+        'deu',  // Verwende die deutsche Sprachdatei
+        { logger: m => console.log(m) }
+    ).then(({ data: { text } }) => {
+        textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
+    }).catch(err => {
+        textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
     });
 }
 
-// Nimmt ein Foto auf und zeigt es an
-function takePhoto() {
-    if (imageCapture) {
-        imageCapture.takePhoto().then(blob => {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(blob);
-
-            // Ersetze das vorherige Foto durch das neue
-            photoContainer.innerHTML = '';  // Lösche vorheriges Bild
-            photoContainer.appendChild(img);
-
-            output.innerText = "Neues Foto aufgenommen: " + new Date().toLocaleTimeString();
-        }).catch(error => {
-            console.error('Fehler beim Aufnehmen des Fotos:', error);
-            output.innerText = "Fehler beim Aufnehmen des Fotos: " + error.message;
-        });
-    }
-}
-
-// Starte die Kamera beim Laden der Seite
-startCamera();
-
-// Nimm alle 1000 ms ein neues Foto auf
-setInterval(takePhoto, 1000);
+// Foto alle 500ms
+setInterval(takePhoto, 500);
