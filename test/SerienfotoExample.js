@@ -1,45 +1,38 @@
-window.onload = function () {
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const photoDiv = document.getElementById('photo-div');
-    const context = canvas.getContext('2d');
+let photoInterval;
+let imageCapture;
 
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        console.error('getUserMedia wird nicht unterstützt!');
-        return;
+async function startPhotoCapture(facingMode = 'environment') {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+
+        const videoTrack = stream.getVideoTracks()[0];
+        imageCapture = new ImageCapture(videoTrack);
+
+        // Alle 100ms ein Foto machen
+        photoInterval = setInterval(capturePhoto, 100);
+
+    } catch (error) {
+        console.error('Kamera konnte nicht gestartet werden:', error);
     }
+}
 
-    // Zugriff auf die Rückkamera des iPhones
-    navigator.mediaDevices.getUserMedia({
-        video: {
-            facingMode: 'environment', // Rückseitige Kamera
-            width: { ideal: 1280 },    // HD-Auflösung
-            height: { ideal: 720 }     // HD-Auflösung
-        }
-    })
-    .then(stream => {
-        video.srcObject = stream; // Kamera stream in Video Element
-        video.play();
+async function capturePhoto() {
+    try {
+        const photoContainer = document.getElementById('photoContainer');
+        const blob = await imageCapture.takePhoto();
+        const imgURL = URL.createObjectURL(blob);
 
-        // Intervall für Fotos alle 100ms
-        setInterval(() => {
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
+        // Füge das Foto zum Container hinzu
+        const imgElement = document.createElement('img');
+        imgElement.src = imgURL;
+        photoContainer.appendChild(imgElement);
 
-            // Das Bild auf das Canvas zeichnen
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    } catch (error) {
+        console.error('Fehler beim Aufnehmen des Fotos:', error);
+    }
+}
 
-            // Foto als Base64-Bilddaten
-            const photoData = canvas.toDataURL('image/png');
-
-            // Füge das Bild in das Div ein
-            const img = document.createElement('img');
-            img.src = photoData;
-            photoDiv.innerHTML = ''; // Optional: Entferne vorherige Bilder
-            photoDiv.appendChild(img); // Füge das neue Bild hinzu
-        }, 100); // Alle 100ms ein neues Foto machen
-    })
-    .catch(error => {
-        console.error('Fehler beim Zugriff auf die Kamera:', error);
-    });
-};
+// Start der Fotoaufnahme
+startPhotoCapture();
