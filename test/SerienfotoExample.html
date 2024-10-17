@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fotoaufnahme und Tesseract.js OCR</title>
+    <script src="SerienfotoExample.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="SerienfotoExample.js" defer></script> <!-- Die JS-Datei -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -24,7 +24,14 @@
 </head>
 <body>
     <h1>Foto und Tesseract.js OCR</h1>
-    <div id="photoDiv"><img id="photo" src="" alt="Foto wird geladen..." width="800"></div>
+    <div>
+        <label>
+            <input type="checkbox" id="resolutionSwitch"> HD-Auflösung verwenden
+        </label>
+    </div>
+    <div id="photoDiv">
+        <img id="photo" src="" alt="Foto wird geladen..." width="800">
+    </div>
     <div id="textOutput">Erkannter Text wird hier angezeigt...</div>
 </body>
 </html>
