@@ -1,7 +1,10 @@
-const photo = document.getElementById('photo');
-const textOutput = document.getElementById('textOutput');
+let isProcessing = false;
 
 function takePhoto() {
+    if (isProcessing) return; // Verhindert, dass ein neuer Prozess gestartet wird, bevor der alte abgeschlossen ist.
+
+    isProcessing = true;  // Setzt den Zustand auf "in Bearbeitung"
+
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } })
         .then(stream => {
             const track = stream.getVideoTracks()[0];
@@ -39,12 +42,20 @@ function takePhoto() {
                     // Stop stream to free resources
                     stream.getTracks().forEach(track => track.stop());
                 })
-                .catch(error => console.error('Fotoaufnahme fehlgeschlagen:', error));
+                .catch(error => {
+                    console.error('Fotoaufnahme fehlgeschlagen:', error);
+                    isProcessing = false;  // Setzt den Zustand zurück
+                });
         })
-        .catch(error => console.error('Kamera konnte nicht gestartet werden:', error));
+        .catch(error => {
+            console.error('Kamera konnte nicht gestartet werden:', error);
+            isProcessing = false;  // Setzt den Zustand zurück
+        });
 }
 
 function processWithTesseract(imageData) {
+    const startTime = performance.now(); // Startzeit messen
+
     Tesseract.recognize(
         imageData,
         'deu',  // Verwende die deutsche Sprachdatei
@@ -53,8 +64,13 @@ function processWithTesseract(imageData) {
         textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
     }).catch(err => {
         textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
+    }).finally(() => {
+        const endTime = performance.now(); // Endzeit messen
+        const recognitionTime = (endTime - startTime).toFixed(2); // Zeit in Millisekunden
+        textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
+        isProcessing = false;  // Setzt den Zustand zurück, um den nächsten Prozess zu starten
     });
 }
 
-// Foto alle 500ms
+// Foto alle 500ms, aber nur, wenn der aktuelle Prozess abgeschlossen ist
 setInterval(takePhoto, 500);
