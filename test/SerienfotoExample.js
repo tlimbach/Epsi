@@ -105,7 +105,7 @@ function processWithTesseract(imageData) {
     const startTime = performance.now();
 
     Tesseract.recognize(imageData, 'deu', {
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Automatische Segmentierung für mehrere Textblöcke
         logger: m => console.log(m)
     })
