@@ -1,4 +1,6 @@
 let isProcessing = false;
+let totalTime = 0;
+let count = 0;
 
 function takePhoto() {
     if (isProcessing) return; // Verhindert, dass ein neuer Prozess gestartet wird, bevor der alte abgeschlossen ist.
@@ -61,13 +63,17 @@ function processWithTesseract(imageData) {
         'deu',  // Verwende die deutsche Sprachdatei
         { logger: m => console.log(m) }
     ).then(({ data: { text } }) => {
+        count++;
+        const endTime = performance.now();
+        const recognitionTime = (endTime - startTime).toFixed(2); // Zeit in Millisekunden
+        totalTime += parseFloat(recognitionTime);
+
+        const avgTime = (totalTime / count).toFixed(2); // Durchschnittszeit
+        textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
         textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
     }).catch(err => {
         textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
     }).finally(() => {
-        const endTime = performance.now(); // Endzeit messen
-        const recognitionTime = (endTime - startTime).toFixed(2); // Zeit in Millisekunden
-        textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
         isProcessing = false;  // Setzt den Zustand zurück, um den nächsten Prozess zu starten
     });
 }
