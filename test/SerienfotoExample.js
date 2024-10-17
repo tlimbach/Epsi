@@ -7,50 +7,53 @@ function takePhoto() {
 
     isProcessing = true;
 
-    // Überprüfen, ob die Checkbox aktiviert ist
     const useHD = document.getElementById('resolutionSwitch').checked;
-    const width = useHD ? 1280 : 1920;
-    const height = useHD ? 720 : 1080;
-
-    console.log("use hd?" + useHD);
-
-     const photoSettings = {
-                imageWidth: useHD ? 1280 : 1920,  // Wähle Auflösung basierend auf HD-Schalter
-                imageHeight: useHD ? 720 : 1080,
-                fillLightMode: 'auto', // Optional: Blitz-Modus, z.B. "auto"
-                redEyeReduction: false // Optional: Rote-Augen-Reduktion
-            };
-
+    const width = 1920; // FullHD (Originalauflösung)
+    const height = 1080; // FullHD (Originalauflösung)
 
     navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: width }, height: { ideal: height } } })
         .then(stream => {
             const track = stream.getVideoTracks()[0];
             const imageCapture = new ImageCapture(track);
-            imageCapture.takePhoto(photoSettings)
+            imageCapture.takePhoto()
                 .then(blob => {
-                    // Löscht den vorherigen Output
                     textOutput.innerHTML = '';
 
                     const imgURL = URL.createObjectURL(blob);
-                    photo.src = imgURL;
-                    photo.style.width = '800px';
 
                     const img = new Image();
                     img.src = imgURL;
                     img.onload = () => {
+                        // Erst auf HD runterskalieren
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.width = 1280; // HD-Breite
+                        canvas.height = 720; // HD-Höhe
+
+                        // Skaliere das Bild auf HD-Größe
+                        context.drawImage(img, 0, 0, 1280, 720);
+
+                        // Zuschneiden des Bildes um 20% oben und unten (HD-Bild)
+                        const croppedCanvas = document.createElement('canvas');
+                        const croppedContext = croppedCanvas.getContext('2d');
+                        croppedCanvas.width = canvas.width; // HD-Breite
+                        croppedCanvas.height = canvas.height * 0.6; // 60% der HD-Höhe
+
+                        // Zeichne nur den mittleren 60%-Bereich des Bildes
+                        croppedContext.drawImage(canvas, 0, canvas.height * 0.2, canvas.width, canvas.height * 0.6, 0, 0, croppedCanvas.width, croppedCanvas.height);
+
+                        // Zeige das zugeschnittene Bild auf der Seite an
+                        photo.src = croppedCanvas.toDataURL('image/png');
+                        photo.style.width = '800px'; // Zeige es in 800px Breite an
+
+                        // Zeige die Auflösung und Dateigröße
                         console.log(`Foto-Auflösung: ${img.width}x${img.height}`);
-                        textOutput.innerHTML += `Foto-Auflösung: ${img.width}x${img.height}<br>`;
-                    };
+                        textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
+                        const fileSizeKB = (blob.size / 1024).toFixed(2);
+                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
 
-                    const fileSizeKB = (blob.size / 1024).toFixed(2);
-                    console.log(`Dateigröße: ${fileSizeKB} KB`);
-                    textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
-
-                    const reader = new FileReader();
-                    reader.readAsDataURL(blob);
-                    reader.onloadend = () => {
-                        const base64data = reader.result;
-                        processWithTesseract(base64data);
+                        // Sende das zugeschnittene Bild an Tesseract
+                        processWithTesseract(croppedCanvas.toDataURL('image/png'));
                     };
 
                     stream.getTracks().forEach(track => track.stop());
@@ -79,7 +82,7 @@ function processWithTesseract(imageData) {
             const avgTime = (totalTime / count).toFixed(2);
             textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
             textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
-          //  textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
+            textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
         })
         .catch(err => {
             textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
@@ -89,5 +92,5 @@ function processWithTesseract(imageData) {
         });
 }
 
-// Foto alle 500ms
+// Foto alle 2500ms
 setInterval(takePhoto, 2500);
