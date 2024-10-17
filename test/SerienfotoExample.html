@@ -1,14 +1,9 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
-    <title>Serienfoto Example</title>
+    <title>Echte Fotos alle 1000ms</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,20 +11,21 @@
         }
         #photoContainer {
             margin-top: 20px;
-        }
-        img {
             width: 640px;
-            height: auto;
+            height: 480px;
+            border: 1px solid black;
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Ferienfoto Beispiel</h1>
-    <video id="video" autoplay style="display:none;"></video>
-    <canvas id="canvas" style="display:none;"></canvas>
-    <div id="photoContainer">
-        <img id="photo" src="" alt="Live Snapshot wird hier angezeigt" />
-    </div>
-    <script src="SerienfotoExample.js?v=123"></script>
+    <h1>Echte Fotos in Intervallen</h1>
+    <div id="photoContainer"></div>
+    <div id="output">Fotos werden hier angezeigt...</div>
+    <script src="SerienfotoExample.js"></script>
 </body>
 </html>

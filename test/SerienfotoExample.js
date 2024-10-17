@@ -1,47 +1,42 @@
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const context = canvas.getContext('2d');
-const photoElement = document.getElementById('photo'); // Das <img> Element für die Fotos
+const photoContainer = document.getElementById('photoContainer');
+const output = document.getElementById('output');
 
-// Funktion zum Starten des Kamerastreams
-function startVideoStream(facingMode = 'environment') {
+// Funktion zum Aufnehmen eines Fotos in HD-Qualität ohne Videostream
+function takePhotoAndAnalyze(facingMode = 'environment') {
     navigator.mediaDevices.getUserMedia({
         video: {
             facingMode: facingMode,
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
+            width: { ideal: 1280 },  // HD-Auflösung
+            height: { ideal: 720 }   // HD-Auflösung
         }
     })
     .then(stream => {
-        video.srcObject = stream;
-        video.play();
+        const videoTrack = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(videoTrack);
 
-        // Alle 100ms ein neues Foto aufnehmen
-        setInterval(capturePhoto, 100);
+        // Fotoaufnahme
+        imageCapture.takePhoto().then(blob => {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(blob);
+
+            // Ersetze das vorherige Foto durch das neue
+            photoContainer.innerHTML = '';  // Lösche vorherigen Inhalt
+            photoContainer.appendChild(img);
+
+            output.innerText = "Neues Foto aufgenommen: " + new Date().toLocaleTimeString();
+
+            // Stream stoppen nach der Fotoaufnahme
+            stream.getTracks().forEach(track => track.stop());
+        }).catch(error => {
+            console.error('Fehler beim Aufnehmen des Fotos:', error);
+            output.innerText = "Fehler beim Aufnehmen des Fotos: " + error.message;
+        });
     })
-    .catch(err => {
-        console.error('Error accessing the camera: ' + err);
+    .catch(error => {
+        console.log(`Kamera mit "${facingMode}" konnte nicht gestartet werden: ${error.message}`);
+        output.innerText = `Kamera mit "${facingMode}" konnte nicht gestartet werden: ${error.message}`;
     });
 }
 
-// Funktion zum Aufnehmen des Fotos und Anzeigen im <img> Tag
-function capturePhoto() {
-    // Vergewissere dich, dass das Video verfügbar ist
-    if (video.videoWidth > 0 && video.videoHeight > 0) {
-        // Setze die Canvas-Größe basierend auf dem Video
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        // Zeichne das aktuelle Bild vom Video auf das Canvas
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Konvertiere das Canvas-Bild zu einem Bild im Base64-Format
-        const imgData = canvas.toDataURL('image/png');
-
-        // Ersetze das Bild im <img> Element mit dem aktuellen Bild
-        photoElement.src = imgData;
-    }
-}
-
-// Starte den Kamerastream und wiederhole die Fotoaufnahme alle 100ms
-startVideoStream();
+// Alle 1000 ms ein echtes Foto aufnehmen
+setInterval(() => takePhotoAndAnalyze(), 1000);
