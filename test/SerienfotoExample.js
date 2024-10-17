@@ -1,38 +1,43 @@
-let photoInterval;
-let imageCapture;
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const context = canvas.getContext('2d');
+const photoContainer = document.getElementById('photoContainer');
 
-async function startPhotoCapture(facingMode = 'environment') {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }
-        });
-
-        const videoTrack = stream.getVideoTracks()[0];
-        imageCapture = new ImageCapture(videoTrack);
+function startVideoStream(facingMode = 'environment') {
+    navigator.mediaDevices.getUserMedia({
+        video: {
+            facingMode: facingMode,
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        }
+    })
+    .then(stream => {
+        video.srcObject = stream;
 
         // Alle 100ms ein Foto machen
-        photoInterval = setInterval(capturePhoto, 100);
-
-    } catch (error) {
-        console.error('Kamera konnte nicht gestartet werden:', error);
-    }
+        setInterval(capturePhoto, 100);
+    })
+    .catch(err => {
+        console.error('Error accessing the camera: ' + err);
+    });
 }
 
-async function capturePhoto() {
-    try {
-        const photoContainer = document.getElementById('photoContainer');
-        const blob = await imageCapture.takePhoto();
-        const imgURL = URL.createObjectURL(blob);
+function capturePhoto() {
+    // Setze Canvas Größe entsprechend des Videos
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
 
-        // Füge das Foto zum Container hinzu
-        const imgElement = document.createElement('img');
-        imgElement.src = imgURL;
-        photoContainer.appendChild(imgElement);
+    // Zeichne das aktuelle Video-Bild auf das Canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    } catch (error) {
-        console.error('Fehler beim Aufnehmen des Fotos:', error);
-    }
+    // Konvertiere Canvas in ein Bild
+    const imgData = canvas.toDataURL('image/png');
+
+    // Füge das Bild als <img> Tag hinzu
+    const imgElement = document.createElement('img');
+    imgElement.src = imgData;
+    photoContainer.appendChild(imgElement);
 }
 
-// Start der Fotoaufnahme
-startPhotoCapture();
+// Starte den Video-Stream
+startVideoStream();

@@ -3,33 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EiPhone Camera Photo Capture</title>
+    <title>Serienfoto Example</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             text-align: center;
         }
-        #photo-div {
-            width: 100%;
+        #photoContainer {
             margin-top: 20px;
         }
         img {
-            max-width: 100%;
+            width: 200px;
             height: auto;
-            margin-top: 10px;
-            border: 1px solid black;
-        }
-        video {
-            display: none; /* Verstecke das Video, da es nur zur Bilderfassung genutzt wird */
+            margin: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Kapture Photos from iPhone Rear Camera</h1>
-    <video id="video" autoplay></video>
+    <h1>Serienfoto Beispiel</h1>
+    <video id="video" autoplay style="display:none;"></video>
     <canvas id="canvas" style="display:none;"></canvas>
-    <div id="photo-div"></div>
-
+    <div id="photoContainer"></div>
     <script src="SerienfotoExample.js"></script>
 </body>
 </html>
