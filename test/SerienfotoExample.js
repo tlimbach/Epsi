@@ -42,6 +42,9 @@ function takePhoto() {
                         // Skaliere das Bild
                         context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
+                        // In Graustufen konvertieren
+                        convertToGrayscale(canvas);
+
                         // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
@@ -86,10 +89,26 @@ function takePhoto() {
         });
 }
 
+function convertToGrayscale(canvas) {
+    const context = canvas.getContext('2d');
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const grayscale = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
+        data[i] = data[i + 1] = data[i + 2] = grayscale;
+    }
+    context.putImageData(imageData, 0, 0);
+}
+
 function processWithTesseract(imageData) {
     const startTime = performance.now();
 
-    Tesseract.recognize(imageData, 'deu', { logger: m => console.log(m) })
+    Tesseract.recognize(imageData, 'deu', {
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+        tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Automatische Segmentierung für mehrere Textblöcke
+        logger: m => console.log(m)
+    })
         .then(({ data: { text } }) => {
             count++;
             const endTime = performance.now();
