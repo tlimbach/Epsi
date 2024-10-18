@@ -7,7 +7,6 @@ let originalImageBlob; // Variable zum Speichern des Originalbildes (Blob)
 
 function takePhoto() {
     if (isProcessing) {
-//        console.log("still processing... ");
         return;
     }
 
@@ -23,7 +22,6 @@ function takePhoto() {
             imageCapture.takePhoto()
                 .then(blob => {
                     originalImageBlob = blob; // Speichert das Original-Bild (Blob)
-//                    textOutput.innerHTML = '';
 
                     const imgURL = URL.createObjectURL(blob);
                     const img = new Image();
@@ -32,83 +30,61 @@ function takePhoto() {
                         const canvas = document.createElement('canvas');
                         const context = canvas.getContext('2d');
 
-                        const aspectRatio = img.width / img.height;
                         let scaledWidth = 800;
                         let scaledHeight = 600;
 
-                        // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
                         if (img.width < img.height) {
-                            // Hochkant: 35% oben und unten weg
                             scaledWidth = 600;
                             scaledHeight = 800;
                         }
 
                         canvas.width = scaledWidth;
                         canvas.height = scaledHeight;
-
-                        // Skaliere das Bild
                         context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
-
-
-                        // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
                         if (img.width < img.height) {
                             croppedCanvas.width = canvas.width;
-                            croppedCanvas.height = canvas.height * 0.4; // 40% der Hochkant-Höhe bleibt
+                            croppedCanvas.height = canvas.height * 0.4;
                             croppedContext.drawImage(canvas, 0, canvas.height * 0.3, canvas.width, canvas.height * 0.4, 0, 0, croppedCanvas.width, croppedCanvas.height);
                         } else {
-                            // Querformat: 30% oben und unten abschneiden
                             croppedCanvas.width = canvas.width;
-                            croppedCanvas.height = canvas.height * 0.7; // 70% der Querformat-Höhe bleibt
+                            croppedCanvas.height = canvas.height * 0.7;
                             croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
                         }
 
-                        // Zeige das zugeschnittene Bild auf der Seite an
-                        photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
-                        photo.style.width = '100%'; // Passt das Bild an den Bildschirm an
+                        photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7);
+                        photo.style.width = '100%';
 
-                        // In Graustufen konvertieren
                         convertToGrayscale(croppedCanvas);
 
-                        // Berechne die neue Dateigröße der Base64-Daten-URL
                         const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.7);
-                        const base64Length = base64Data.length - 'data:image/jpeg;base64,'.length;
-                        const fileSizeKB = (base64Length * (3 / 4)) / 1024;
 
-                        // Zeige die Auflösung und Dateigröße
-                        // textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
-                        // textOutput.innerHTML += `Dateigröße: ${fileSizeKB.toFixed(2)} KB<br>`;
-
-                        // Sende das komprimierte Bild an Tesseract
-
-                         checkWithTesseract(base64Data).then(isTextFound => {
+                        checkWithTesseract(base64Data).then(isTextFound => {
                             if (isTextFound) {
-                            console.log("Text erkannt");
-//                                textOutput.innerHTML += 'Text erkannt.';
                                 if (zuletztDatenMuellerkannt) {
                                     zuletztDatenMuellerkannt = false;
-//                                    textOutput.innerHTML += 'would check with OCR now';
 
-                                    // Das Originalbild für OCRSpace vorbereiten
                                     createBase64FromBlob(originalImageBlob).then(base64ForOCR => {
-                                        console.log("using SpaceOCR...")
-                                        checkWithOCRSpace(base64ForOCR); // Hier wird das Base64-Bild an OCRSpace übergeben
+                                        checkWithOCRSpace(base64ForOCR).finally(() => {
+                                            // Setze isProcessing erst hier zurück
+                                            isProcessing = false;
+                                        });
                                     }).catch(err => {
                                         console.error('Fehler beim Erstellen von Base64 für OCR:', err);
+                                        isProcessing = false; // Bei Fehler ebenfalls zurücksetzen
                                     });
                                 } else {
-                                    console.log('immernoch altes Bild');
+                                    console.log('Immer noch altes Bild.');
+                                    isProcessing = false;
                                 }
                             } else {
                                 zuletztDatenMuellerkannt = true;
-                                textOutput.innerHTML += 'Kein Text erkannt.';
+                                console.log('Kein Text erkannt.');
+                                isProcessing = false;
                             }
-
-                            isProcessing = false;
                         });
-
                         stream.getTracks().forEach(track => track.stop());
                     };
                 })
@@ -164,6 +140,98 @@ function checkWithTesseract(imageData) {
     }).finally(() => {
 
     });
+}
+
+function createBase64FromBlob(blob) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const imgURL = URL.createObjectURL(blob);
+
+        img.src = imgURL;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            // Setze die Zielauflösung auf HD (1280x720)
+            let scaledWidth = 1600;
+            let scaledHeight = 1200;
+
+            // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
+            if (img.width < img.height) {
+                // Hochkant: Skalierung auf 720x1280 (HD Hochkant)
+                scaledWidth = 1200;
+                scaledHeight = 1600;
+            }
+
+            // Setze die Canvasgröße entsprechend der neuen Abmessungen
+            canvas.width = scaledWidth;
+            canvas.height = scaledHeight;
+
+            // Skaliere das Bild auf HD
+            context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+
+            // Zuschneiden des Bildes um 20% oder 35% oben und unten
+            const croppedCanvas = document.createElement('canvas');
+            const croppedContext = croppedCanvas.getContext('2d');
+            if (img.width < img.height) {
+                // Hochkant: 40% des Bildes bleibt (30% oben und 30% unten abschneiden)
+                croppedCanvas.width = canvas.width;
+                croppedCanvas.height = canvas.height * 0.4; // 40% der Hochkant-Höhe bleibt
+                croppedContext.drawImage(canvas, 0, canvas.height * 0.3, canvas.width, canvas.height * 0.4, 0, 0, croppedCanvas.width, croppedCanvas.height);
+            } else {
+                // Querformat: 70% des Bildes bleibt (15% oben und 15% unten abschneiden)
+                croppedCanvas.width = canvas.width;
+                croppedCanvas.height = canvas.height * 0.7; // 70% der Querformat-Höhe bleibt
+                croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
+            }
+
+            // Konvertiere das zugeschnittene Bild in eine Base64-Daten-URL
+            const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.9); // 90% Qualität
+
+            resolve(base64Data);
+        };
+
+        img.onerror = (err) => {
+            reject('Fehler beim Laden des Bildes: ' + err);
+        };
+    });
+}
+
+
+
+function checkWithOCRSpace(imgData) {
+    console.log("Check with OCR...");
+    const formData = new FormData();
+    formData.append("base64Image", imgData);
+    formData.append("language", "ger");
+    formData.append('isOverlayRequired', true);
+    formData.append('OCREngine', 2);
+    formData.append('isTable', true);
+
+    return fetch("https://api.ocr.space/parse/image", {
+        method: "POST",
+        headers: {
+            "apikey": "K87108113888957"
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            evaluateSpaceData(data);
+        } else {
+            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+        }
+    })
+    .catch(err => {
+        console.log("Fehler bei OCR.Space API: " + err);
+    });
+}
+
+function evaluateSpaceData(data) {
+    const parsedText = data.ParsedResults[0].ParsedText;
+    textOutput.innerText = "OCR.Space Result: " + parsedText;
+    console.log("spaceOCR: " + parsedText );
 }
 
 // Foto alle 2000ms
