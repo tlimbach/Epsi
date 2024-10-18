@@ -9,14 +9,14 @@ function createBase64FromBlob(blob) {
             const context = canvas.getContext('2d');
 
             // Setze die Zielauflösung auf HD (1280x720)
-            let scaledWidth = 1280;
-            let scaledHeight = 720;
+            let scaledWidth = 1600;
+            let scaledHeight = 1200;
 
             // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
             if (img.width < img.height) {
                 // Hochkant: Skalierung auf 720x1280 (HD Hochkant)
-                scaledWidth = 720;
-                scaledHeight = 1280;
+                scaledWidth = 1200;
+                scaledHeight = 1600;
             }
 
             // Setze die Canvasgröße entsprechend der neuen Abmessungen
