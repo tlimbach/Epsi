@@ -8,14 +8,41 @@ function createBase64FromBlob(blob) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            canvas.width = img.width;
-            canvas.height = img.height;
+            // Setze die Zielauflösung auf HD (1280x720)
+            let scaledWidth = 1280;
+            let scaledHeight = 720;
 
-            // Zeichne das Originalbild auf den Canvas
-            context.drawImage(img, 0, 0, img.width, img.height);
+            // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
+            if (img.width < img.height) {
+                // Hochkant: Skalierung auf 720x1280 (HD Hochkant)
+                scaledWidth = 720;
+                scaledHeight = 1280;
+            }
 
-            // Konvertiere das Bild in eine Base64-Daten-URL
-            const base64Data = canvas.toDataURL('image/jpeg', 0.9); // 90% Qualität
+            // Setze die Canvasgröße entsprechend der neuen Abmessungen
+            canvas.width = scaledWidth;
+            canvas.height = scaledHeight;
+
+            // Skaliere das Bild auf HD
+            context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
+
+            // Zuschneiden des Bildes um 20% oder 35% oben und unten
+            const croppedCanvas = document.createElement('canvas');
+            const croppedContext = croppedCanvas.getContext('2d');
+            if (img.width < img.height) {
+                // Hochkant: 40% des Bildes bleibt (30% oben und 30% unten abschneiden)
+                croppedCanvas.width = canvas.width;
+                croppedCanvas.height = canvas.height * 0.4; // 40% der Hochkant-Höhe bleibt
+                croppedContext.drawImage(canvas, 0, canvas.height * 0.3, canvas.width, canvas.height * 0.4, 0, 0, croppedCanvas.width, croppedCanvas.height);
+            } else {
+                // Querformat: 70% des Bildes bleibt (15% oben und 15% unten abschneiden)
+                croppedCanvas.width = canvas.width;
+                croppedCanvas.height = canvas.height * 0.7; // 70% der Querformat-Höhe bleibt
+                croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
+            }
+
+            // Konvertiere das zugeschnittene Bild in eine Base64-Daten-URL
+            const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.9); // 90% Qualität
 
             resolve(base64Data);
         };
@@ -25,6 +52,7 @@ function createBase64FromBlob(blob) {
         };
     });
 }
+
 
 
 function checkWithOCRSpace(imgData) {
