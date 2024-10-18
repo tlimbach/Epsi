@@ -26,14 +26,14 @@ function takePhoto() {
                         const context = canvas.getContext('2d');
 
                         const aspectRatio = img.width / img.height;
-                        let scaledWidth = 640;
-                        let scaledHeight = 480;
+                        let scaledWidth = 800;
+                        let scaledHeight = 600;
 
                         // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
                         if (img.width < img.height) {
                             // Hochkant: 35% oben und unten weg
-                            scaledWidth = 480;
-                            scaledHeight = 640;
+                            scaledWidth = 600;
+                            scaledHeight = 800;
                         }
 
                         canvas.width = scaledWidth;
@@ -81,11 +81,13 @@ function takePhoto() {
                 .catch(error => {
                     console.error('Fotoaufnahme fehlgeschlagen:', error);
                     isProcessing = false;
+                    setTimeout(takePhoto, 100);
                 });
         })
         .catch(error => {
             console.error('Kamera konnte nicht gestartet werden:', error);
             isProcessing = false;
+            setTimeout(takePhoto, 100);
         });
 }
 
@@ -129,4 +131,4 @@ function processWithTesseract(imageData) {
 }
 
 // Foto alle 1000ms
-setInterval(takePhoto, 1000);
+takePhoto();
