@@ -90,6 +90,9 @@ function takePhoto() {
                                 zuletztDatenMuellerkannt = true;
                                 textOutput.innerHTML +='Kein Text erkannt.';
                             }
+
+                            isProcessing = false;
+
                         });
 
                         stream.getTracks().forEach(track => track.stop());
@@ -145,7 +148,7 @@ function checkWithTesseract(imageData) {
     }).catch(err => {
         textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
     }).finally(() => {
-        isProcessing = false;
+
     });
 }
 
