@@ -82,6 +82,7 @@ function takePhoto() {
                                     zuletztDatenMuellerkannt = false;
                                     // checkWithOCRSpace(base64Data);
                                     textOutput.innerHTML += 'would check with OCR now';
+                                    checkWithOCRSpace(base64Data);
                                 } else {
                                     textOutput.innerHTML += 'Aber immernoch gleiches Bild...';
                                 }
@@ -123,7 +124,7 @@ function checkWithTesseract(imageData) {
     return Tesseract.recognize(imageData, 'deu', {
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
-        logger: m => console.log(m)
+        logger: m => {}
     }).then(({ data: { text } }) => {
         count++;
         const endTime = performance.now();

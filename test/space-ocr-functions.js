@@ -1,3 +1,43 @@
+function checkWithOCRSpace(imgData) {
+    console.log("Check with OCR....");
+    const formData = new FormData();
+    formData.append("base64Image", imgData);
+    formData.append("language", "ger");
+    formData.append('isOverlayRequired', true);
+    formData.append('OCREngine', 2);
+    formData.append('isTable', true);
+
+    fetch("https://api.ocr.space/parse/image", {
+        method: "POST",
+        headers: {
+            "apikey": "K87108113888957"  // Füge hier deinen API-Schlüssel ein
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Ausgabe der gesamten API-Antwort zur Diagnose
+        console.log("OCR.Space API Antwort:", data);
+
+        // Überprüfen, ob ParsedResults existiert und ob es Ergebnisse enthält
+        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            evaluateSpaceData(data);
+        } else {
+            textOutput.innerText = "Fehler: Keine Ergebnisse von OCR.Space erhalten.";
+        }
+    })
+    .catch(err => {
+        console.log("Fehler bei OCR.Space API: " + err);
+    });
+}
+
+
+function evaluateSpaceData(data) {
+    const parsedText = data.ParsedResults[0].ParsedText;
+    textOutput.innerText = "OCR.Space Result: " + parsedText;
+}
+
+
 function extractProductPrice(data) {
     // Muster für Preis im Format X.XX, X,XX oder -.99
     let pricePattern = /(\d+[.,]\d{2}|[.,]\d{2})/;
