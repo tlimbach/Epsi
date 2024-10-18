@@ -129,4 +129,4 @@ function processWithTesseract(imageData) {
 }
 
 // Foto alle 1000ms
-setIntervall(takePhoto, 500);
+setInterval(takePhoto, 500);
