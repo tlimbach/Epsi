@@ -49,9 +49,6 @@ function takePhoto() {
                         // Skaliere das Bild
                         context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
-                        // In Graustufen konvertieren
-                        convertToGrayscale(canvas);
-
                         // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
@@ -69,6 +66,9 @@ function takePhoto() {
                         // Zeige das zugeschnittene Bild auf der Seite an
                         photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
                         photo.style.width = '100%'; // Passt das Bild an den Bildschirm an
+
+                         // In Graustufen konvertieren
+                        convertToGrayscale(croppedCanvas);
 
                         // Berechne die neue Dateigröße der Base64-Daten-URL
                         const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.7);
