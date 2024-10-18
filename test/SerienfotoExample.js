@@ -81,13 +81,11 @@ function takePhoto() {
                 .catch(error => {
                     console.error('Fotoaufnahme fehlgeschlagen:', error);
                     isProcessing = false;
-                    setTimeout(takePhoto, 100);
                 });
         })
         .catch(error => {
             console.error('Kamera konnte nicht gestartet werden:', error);
             isProcessing = false;
-            setTimeout(takePhoto, 100);
         });
 }
 
@@ -131,4 +129,4 @@ function processWithTesseract(imageData) {
 }
 
 // Foto alle 1000ms
-takePhoto();
+setIntervall(takePhoto, 500);
