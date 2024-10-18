@@ -49,6 +49,8 @@ function takePhoto() {
                         // Skaliere das Bild
                         context.drawImage(img, 0, 0, scaledWidth, scaledHeight);
 
+
+
                         // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
@@ -67,7 +69,7 @@ function takePhoto() {
                         photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
                         photo.style.width = '100%'; // Passt das Bild an den Bildschirm an
 
-                         // In Graustufen konvertieren
+                        // In Graustufen konvertieren
                         convertToGrayscale(croppedCanvas);
 
                         // Berechne die neue Dateigröße der Base64-Daten-URL
@@ -83,6 +85,7 @@ function takePhoto() {
 
                          checkWithTesseract(base64Data).then(isTextFound => {
                             if (isTextFound) {
+                            console.log("Text erkannt");
 //                                textOutput.innerHTML += 'Text erkannt.';
                                 if (zuletztDatenMuellerkannt) {
                                     zuletztDatenMuellerkannt = false;
@@ -90,12 +93,13 @@ function takePhoto() {
 
                                     // Das Originalbild für OCRSpace vorbereiten
                                     createBase64FromBlob(originalImageBlob).then(base64ForOCR => {
+                                        console.log("using SpaceOCR...")
                                         checkWithOCRSpace(base64ForOCR); // Hier wird das Base64-Bild an OCRSpace übergeben
                                     }).catch(err => {
                                         console.error('Fehler beim Erstellen von Base64 für OCR:', err);
                                     });
                                 } else {
-//                                    textOutput.innerHTML += 'Aber immernoch gleiches Bild...';
+                                    console.log('immernoch altes Bild');
                                 }
                             } else {
                                 zuletztDatenMuellerkannt = true;
