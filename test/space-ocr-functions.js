@@ -35,6 +35,7 @@ function checkWithOCRSpace(imgData) {
 function evaluateSpaceData(data) {
     const parsedText = data.ParsedResults[0].ParsedText;
     textOutput.innerText = "OCR.Space Result: " + parsedText;
+    console.log("spaceOCR: " + parsedText );
 }
 
 

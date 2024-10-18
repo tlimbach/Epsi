@@ -4,7 +4,10 @@ let count = 0;
 let zuletztDatenMuellerkannt = true;
 
 function takePhoto() {
-    if (isProcessing) return;
+    if (isProcessing) {
+//        console.log("still processing... ");
+        return;
+    }
 
     isProcessing = true;
 
@@ -153,4 +156,4 @@ function checkWithTesseract(imageData) {
 }
 
 // Foto alle 2000ms
-setInterval(takePhoto, 2000);
+setInterval(takePhoto, 100);
