@@ -3,6 +3,8 @@ let totalTime = 0;
 let count = 0;
 let zuletztDatenMuellerkannt = true;
 
+let originalImageBlob; // Variable zum Speichern des Originalbildes (Blob)
+
 function takePhoto() {
     if (isProcessing) {
 //        console.log("still processing... ");
@@ -20,6 +22,7 @@ function takePhoto() {
             const imageCapture = new ImageCapture(track);
             imageCapture.takePhoto()
                 .then(blob => {
+                    originalImageBlob = blob; // Speichert das Original-Bild (Blob)
                     textOutput.innerHTML = '';
 
                     const imgURL = URL.createObjectURL(blob);
@@ -78,27 +81,28 @@ function takePhoto() {
 
                         // Sende das komprimierte Bild an Tesseract
 
-                        checkWithTesseract(base64Data).then(isTextFound => {
+                         checkWithTesseract(base64Data).then(isTextFound => {
                             if (isTextFound) {
                                 textOutput.innerHTML += 'Text erkannt.';
                                 if (zuletztDatenMuellerkannt) {
                                     zuletztDatenMuellerkannt = false;
-                                    // checkWithOCRSpace(base64Data);
                                     textOutput.innerHTML += 'would check with OCR now';
 
-                                    checkWithOCRSpace(base64Data);
-
-
+                                    // Das Originalbild für OCRSpace vorbereiten
+                                    createBase64FromBlob(originalImageBlob).then(base64ForOCR => {
+                                        checkWithOCRSpace(base64ForOCR); // Hier wird das Base64-Bild an OCRSpace übergeben
+                                    }).catch(err => {
+                                        console.error('Fehler beim Erstellen von Base64 für OCR:', err);
+                                    });
                                 } else {
                                     textOutput.innerHTML += 'Aber immernoch gleiches Bild...';
                                 }
                             } else {
                                 zuletztDatenMuellerkannt = true;
-                                textOutput.innerHTML +='Kein Text erkannt.';
+                                textOutput.innerHTML += 'Kein Text erkannt.';
                             }
 
                             isProcessing = false;
-
                         });
 
                         stream.getTracks().forEach(track => track.stop());

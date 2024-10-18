@@ -1,3 +1,32 @@
+function createBase64FromBlob(blob) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        const imgURL = URL.createObjectURL(blob);
+
+        img.src = imgURL;
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Zeichne das Originalbild auf den Canvas
+            context.drawImage(img, 0, 0, img.width, img.height);
+
+            // Konvertiere das Bild in eine Base64-Daten-URL
+            const base64Data = canvas.toDataURL('image/jpeg', 0.9); // 90% Qualität
+
+            resolve(base64Data);
+        };
+
+        img.onerror = (err) => {
+            reject('Fehler beim Laden des Bildes: ' + err);
+        };
+    });
+}
+
+
 function checkWithOCRSpace(imgData) {
     console.log("Check with OCR....");
     const startTime = performance.now();
