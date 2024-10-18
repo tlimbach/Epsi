@@ -26,14 +26,14 @@ function takePhoto() {
                         const context = canvas.getContext('2d');
 
                         const aspectRatio = img.width / img.height;
-                        let scaledWidth = 800;
-                        let scaledHeight = 600;
+                        let scaledWidth = 640;
+                        let scaledHeight = 480;
 
                         // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
                         if (img.width < img.height) {
                             // Hochkant: 35% oben und unten weg
-                            scaledWidth = 600;
-                            scaledHeight = 800;
+                            scaledWidth = 480;
+                            scaledHeight = 640;
                         }
 
                         canvas.width = scaledWidth;
@@ -48,33 +48,32 @@ function takePhoto() {
                         // Zuschneiden des Bildes um 20% oder 35% oben und unten
                         const croppedCanvas = document.createElement('canvas');
                         const croppedContext = croppedCanvas.getContext('2d');
-                   if (img.width < img.height) {
-    // Hochkant: 30% oben und unten abschneiden
-    croppedCanvas.width = canvas.width;
-    croppedCanvas.height = canvas.height * 0.4; // 40% der Hochkant-Höhe bleibt
-    croppedContext.drawImage(canvas, 0, canvas.height * 0.3, canvas.width, canvas.height * 0.4, 0, 0, croppedCanvas.width, croppedCanvas.height);
-} else {
-    // Querformat: 30% oben und unten abschneiden
-    croppedCanvas.width = canvas.width;
-    croppedCanvas.height = canvas.height * 0.7; // 70% der Querformat-Höhe bleibt
-    croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
-}
-
+                        if (img.width < img.height) {
+                            croppedCanvas.width = canvas.width;
+                            croppedCanvas.height = canvas.height * 0.4; // 40% der Hochkant-Höhe bleibt
+                            croppedContext.drawImage(canvas, 0, canvas.height * 0.3, canvas.width, canvas.height * 0.4, 0, 0, croppedCanvas.width, croppedCanvas.height);
+                        } else {
+                            // Querformat: 30% oben und unten abschneiden
+                            croppedCanvas.width = canvas.width;
+                            croppedCanvas.height = canvas.height * 0.7; // 70% der Querformat-Höhe bleibt
+                            croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
+                        }
 
                         // Zeige das zugeschnittene Bild auf der Seite an
                         photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
                         photo.style.width = '100%'; // Passt das Bild an den Bildschirm an
 
+                        // Berechne die neue Dateigröße der Base64-Daten-URL
+                        const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.7);
+                        const base64Length = base64Data.length - 'data:image/jpeg;base64,'.length;
+                        const fileSizeKB = (base64Length * (3 / 4)) / 1024;
+
                         // Zeige die Auflösung und Dateigröße
                         textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
-                        const fileSizeKB = (blob.size / 1024).toFixed(2);
-                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB} KB<br>`;
-
-                        // Komprimiere das Bild für Tesseract
-                        const compressedImageData = croppedCanvas.toDataURL('image/jpeg', 0.7);
+                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB.toFixed(2)} KB<br>`;
 
                         // Sende das komprimierte Bild an Tesseract
-                        processWithTesseract(compressedImageData);
+                        processWithTesseract(base64Data);
                     };
 
                     stream.getTracks().forEach(track => track.stop());
@@ -106,10 +105,8 @@ function processWithTesseract(imageData) {
     const startTime = performance.now();
 
     Tesseract.recognize(imageData, 'deu', {
-        //tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
-        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-        //tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Automatische Segmentierung für mehrere Textblöcke
-        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE, // Automatische Segmentierung für mehrere Textblöcke
+        tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
         logger: m => console.log(m)
     })
         .then(({ data: { text } }) => {
@@ -131,5 +128,5 @@ function processWithTesseract(imageData) {
         });
 }
 
-// Foto alle 2500ms
+// Foto alle 1000ms
 setInterval(takePhoto, 1000);
