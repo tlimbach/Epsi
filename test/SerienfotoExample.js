@@ -108,17 +108,23 @@ function processWithTesseract(imageData) {
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
         logger: m => console.log(m)
-    })
-        .then(({ data: { text } }) => {
+    }).then(({ data: { text } }) => {
             count++;
             const endTime = performance.now();
             const recognitionTime = (endTime - startTime).toFixed(2);
             totalTime += parseFloat(recognitionTime);
 
             const avgTime = (totalTime / count).toFixed(2);
-            textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
-            textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
-            textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
+//            textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
+//            textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
+
+            if (text.match(/\w{7,}/)) {
+              textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
+            return true;  // Text gefunden
+            } else {
+                textOutput.innerText = "Datenmüll";
+                return false;  // Kein Text gefunden
+            }
         })
         .catch(err => {
             textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
@@ -128,5 +134,7 @@ function processWithTesseract(imageData) {
         });
 }
 
+
+
 // Foto alle 1000ms
-setInterval(takePhoto, 10);
+setInterval(takePhoto, 2000);
