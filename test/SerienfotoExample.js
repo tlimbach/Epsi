@@ -26,14 +26,14 @@ function takePhoto() {
                         const context = canvas.getContext('2d');
 
                         const aspectRatio = img.width / img.height;
-                        let scaledWidth = 1280;
-                        let scaledHeight = 720;
+                        let scaledWidth = 800;
+                        let scaledHeight = 600;
 
                         // Dynamische Anpassung basierend auf der tatsächlichen Ausrichtung
                         if (img.width < img.height) {
                             // Hochkant: 35% oben und unten weg
-                            scaledWidth = 720;
-                            scaledHeight = 1280;
+                            scaledWidth = 600;
+                            scaledHeight = 800;
                         }
 
                         canvas.width = scaledWidth;
@@ -131,4 +131,4 @@ function processWithTesseract(imageData) {
 }
 
 // Foto alle 2500ms
-setInterval(takePhoto, 2500);
+setInterval(takePhoto, 1000);
