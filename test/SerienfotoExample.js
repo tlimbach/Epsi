@@ -85,7 +85,10 @@ function takePhoto() {
                                     zuletztDatenMuellerkannt = false;
                                     // checkWithOCRSpace(base64Data);
                                     textOutput.innerHTML += 'would check with OCR now';
+
                                     checkWithOCRSpace(base64Data);
+
+
                                 } else {
                                     textOutput.innerHTML += 'Aber immernoch gleiches Bild...';
                                 }

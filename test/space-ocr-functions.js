@@ -1,5 +1,6 @@
 function checkWithOCRSpace(imgData) {
     console.log("Check with OCR....");
+    const startTime = performance.now();
     const formData = new FormData();
     formData.append("base64Image", imgData);
     formData.append("language", "ger");
@@ -16,6 +17,10 @@ function checkWithOCRSpace(imgData) {
     })
     .then(response => response.json())
     .then(data => {
+
+       const endTime = performance.now();
+       console.log("OCR Space took " + (endTime-startTime));
+
         // Ausgabe der gesamten API-Antwort zur Diagnose
         console.log("OCR.Space API Antwort:", data);
 
