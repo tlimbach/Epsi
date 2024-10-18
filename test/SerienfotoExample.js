@@ -1,6 +1,7 @@
 let isProcessing = false;
 let totalTime = 0;
 let count = 0;
+let zuletztDatenMuellerkannt = true;
 
 function takePhoto() {
     if (isProcessing) return;
@@ -69,14 +70,29 @@ function takePhoto() {
                         const fileSizeKB = (base64Length * (3 / 4)) / 1024;
 
                         // Zeige die Auflösung und Dateigröße
-                        textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
-                        textOutput.innerHTML += `Dateigröße: ${fileSizeKB.toFixed(2)} KB<br>`;
+                        // textOutput.innerHTML += `Foto-Auflösung: ${croppedCanvas.width}x${croppedCanvas.height} (nach Skalierung)<br>`;
+                        // textOutput.innerHTML += `Dateigröße: ${fileSizeKB.toFixed(2)} KB<br>`;
 
                         // Sende das komprimierte Bild an Tesseract
-                        processWithTesseract(base64Data);
-                    };
 
-                    stream.getTracks().forEach(track => track.stop());
+                        checkWithTesseract(base64Data).then(isTextFound => {
+                            if (isTextFound) {
+                                textOutput.innerHTML += 'Text erkannt.';
+                                if (zuletztDatenMuellerkannt) {
+                                    zuletztDatenMuellerkannt = false;
+                                    // checkWithOCRSpace(base64Data);
+                                    textOutput.innerHTML += 'would check with OCR now';
+                                } else {
+                                    textOutput.innerHTML += 'Aber immernoch gleiches Bild...';
+                                }
+                            } else {
+                                zuletztDatenMuellerkannt = true;
+                                textOutput.innerHTML +='Kein Text erkannt.';
+                            }
+                        });
+
+                        stream.getTracks().forEach(track => track.stop());
+                    };
                 })
                 .catch(error => {
                     console.error('Fotoaufnahme fehlgeschlagen:', error);
@@ -101,40 +117,36 @@ function convertToGrayscale(canvas) {
     context.putImageData(imageData, 0, 0);
 }
 
-function processWithTesseract(imageData) {
+function checkWithTesseract(imageData) {
     const startTime = performance.now();
 
-    Tesseract.recognize(imageData, 'deu', {
+    return Tesseract.recognize(imageData, 'deu', {
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
         logger: m => console.log(m)
     }).then(({ data: { text } }) => {
-            count++;
-            const endTime = performance.now();
-            const recognitionTime = (endTime - startTime).toFixed(2);
-            totalTime += parseFloat(recognitionTime);
+        count++;
+        const endTime = performance.now();
+        const recognitionTime = (endTime - startTime).toFixed(2);
+        totalTime += parseFloat(recognitionTime);
 
-            const avgTime = (totalTime / count).toFixed(2);
-//            textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
-//            textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
+        const avgTime = (totalTime / count).toFixed(2);
+        // textOutput.innerHTML += `Erkennungszeit: ${recognitionTime} ms<br>`;
+        // textOutput.innerHTML += `Durchschnittliche Erkennungszeit: ${avgTime} ms<br>`;
 
-            if (text.match(/\w{7,}/)) {
-              textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
-            return true;  // Text gefunden
-            } else {
-                textOutput.innerText = "Datenmüll";
-                return false;  // Kein Text gefunden
-            }
-        })
-        .catch(err => {
-            textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
-        })
-        .finally(() => {
-            isProcessing = false;
-        });
+        if (text.match(/\w{7,}/)) {
+//            textOutput.innerHTML += 'Erkannter Text: ' + text + '<br>';
+            return true; // Text gefunden
+        } else {
+            textOutput.innerText = "Datenmüll";
+            return false; // Kein Text gefunden
+        }
+    }).catch(err => {
+        textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
+    }).finally(() => {
+        isProcessing = false;
+    });
 }
 
-
-
-// Foto alle 1000ms
+// Foto alle 2000ms
 setInterval(takePhoto, 2000);
