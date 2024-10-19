@@ -113,16 +113,18 @@ function convertToGrayscale(canvas) {
 }
 
 function checkWithTesseract(imageData) {
-    const startTime = performance.now();
+    const startTime = performance.now(); // Startzeit
 
     return Tesseract.recognize(imageData, 'deu', {
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
         logger: m => { }
     }).then(({ data: { text } }) => {
+        const endTime = performance.now(); // Endzeit
+        const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
+        console.log(`Tesseract Erkennung dauerte: ${recognitionTime} ms`);
+
         count++;
-        const endTime = performance.now();
-        const recognitionTime = (endTime - startTime).toFixed(2);
         totalTime += parseFloat(recognitionTime);
 
         const avgTime = (totalTime / count).toFixed(2);
@@ -130,11 +132,10 @@ function checkWithTesseract(imageData) {
         if (text.match(/\w{7,}/)) {
             return true; // Text gefunden
         } else {
-            // textOutput.innerText = "Datenmüll";
             return false; // Kein Text gefunden
         }
     }).catch(err => {
-        textOutput.innerHTML += 'Fehler bei der Texterkennung: ' + err + '<br>';
+        console.error('Fehler bei der Tesseract Texterkennung: ' + err);
     });
 }
 
@@ -189,6 +190,9 @@ function createBase64FromBlob(blob) {
 function checkWithOCRSpace(imgData) {
     console.log("Check with OCR...");
     setBackgroundColor('orange');
+    
+    const startTime = performance.now(); // Startzeit
+
     const formData = new FormData();
     formData.append("base64Image", imgData);
     formData.append("language", "ger");
@@ -203,18 +207,22 @@ function checkWithOCRSpace(imgData) {
         },
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            if (data && data.ParsedResults && data.ParsedResults.length > 0) {
-                setBackgroundColor('green');
-                evaluateSpaceData(data);
-            } else {
-                console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
-            }
-        })
-        .catch(err => {
-            console.log("Fehler bei OCR.Space API: " + err);
-        });
+    .then(response => response.json())
+    .then(data => {
+        const endTime = performance.now(); // Endzeit
+        const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
+        console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
+
+        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            setBackgroundColor('green');
+            evaluateSpaceData(data);
+        } else {
+            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+        }
+    })
+    .catch(err => {
+        console.error("Fehler bei der OCR.Space API: " + err);
+    });
 }
 
 function evaluateSpaceData(data) {
