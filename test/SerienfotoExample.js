@@ -4,12 +4,11 @@ let count = 0;
 let zuletztDatenMuellerkannt = true;
 
 let originalImageBlob; // Variable zum Speichern des Originalbildes (Blob)
-
-let imageLocked = false;
+let imageLocked = false; // Sperre, wenn Text erkannt wurde
 
 function takePhoto() {
     if (isProcessing) {
-        return;
+        return; // Verhindere, dass die Verarbeitung startet, wenn bereits eine läuft
     }
 
     isProcessing = true;
@@ -56,7 +55,7 @@ function takePhoto() {
                             croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
                         }
 
-
+                        // Wenn das Bild nicht gesperrt ist, aktualisiere es
                         if (!imageLocked) {
                             photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7);
                         }
@@ -71,15 +70,16 @@ function takePhoto() {
                                 if (zuletztDatenMuellerkannt) {
                                     zuletztDatenMuellerkannt = false;
 
+                                    // Sperre das Bild für 3 Sekunden
                                     imageLocked = true;
                                     setTimeout(() => {
-                                        imageLocked = false; // Nach 3 Sekunden kann das nächste Bild angezeigt werden
+                                        imageLocked = false; // Nach 3 Sekunden Bild entsperren
                                     }, 3000);
 
+                                    // Starte OCR.Space nach Tesseract-Erkennung
                                     createBase64FromBlob(originalImageBlob).then(base64ForOCR => {
                                         checkWithOCRSpace(base64ForOCR).finally(() => {
-                                            // Setze isProcessing erst hier zurück
-                                            isProcessing = false;
+                                            isProcessing = false; // Verarbeitungsflag zurücksetzen
                                         });
                                     }).catch(err => {
                                         console.error('Fehler beim Erstellen von Base64 für OCR:', err);
@@ -236,7 +236,6 @@ function checkWithOCRSpace(imgData) {
 }
 
 function evaluateSpaceData(data) {
-
     let productPrice = extractProductPrice(data);
     let productWeight = extractProductWeight(data);
     let productName = extractProductName(data, productWeight);
@@ -246,23 +245,15 @@ function evaluateSpaceData(data) {
     textOutput.innerHTML += 'Weight: ' + productWeight + '<br>';
     textOutput.innerHTML += 'Price: ' + productPrice + '<br>';
     textOutput.innerHTML += 'Price per Kilo: ' + pricePerKilo;
-
-
 }
 
 function setBackgroundColor(color) {
-    // Überprüfen, ob der übergebene Parameter eine gültige Zeichenkette ist
     if (typeof color === 'string' && color.trim() !== '') {
-        // Setzt die Hintergrundfarbe des Body-Elements auf die übergebene Farbe
         document.body.style.backgroundColor = color;
     } else {
         console.error('Bitte geben Sie eine gültige Farbe als Parameter ein.');
     }
 }
 
-
-setBackgroundColor('gray');
-
-
-// Foto alle 2000ms
+// Foto alle 100ms aufnehmen
 setInterval(takePhoto, 100);
