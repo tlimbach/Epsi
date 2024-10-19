@@ -80,6 +80,7 @@ function takePhoto() {
                                     isProcessing = false;
                                 }
                             } else {
+                                setBackgroundColor('gray');
                                 zuletztDatenMuellerkannt = true;
                                 console.log('Kein Text erkannt.');
                                 isProcessing = false;
@@ -129,7 +130,7 @@ function checkWithTesseract(imageData) {
         if (text.match(/\w{7,}/)) {
             return true; // Text gefunden
         } else {
-            textOutput.innerText = "Datenmüll";
+            // textOutput.innerText = "Datenmüll";
             return false; // Kein Text gefunden
         }
     }).catch(err => {
@@ -147,12 +148,15 @@ function createBase64FromBlob(blob) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            let scaledWidth = 1600;
-            let scaledHeight = 1200;
+            let w = 1200;
+            let h = 780;
+
+            let scaledWidth = w;
+            let scaledHeight = h;
 
             if (img.width < img.height) {
-                scaledWidth = 1200;
-                scaledHeight = 1600;
+                scaledWidth = h;
+                scaledHeight = w;
             }
 
             canvas.width = scaledWidth;
@@ -184,6 +188,7 @@ function createBase64FromBlob(blob) {
 
 function checkWithOCRSpace(imgData) {
     console.log("Check with OCR...");
+    setBackgroundColor('orange');
     const formData = new FormData();
     formData.append("base64Image", imgData);
     formData.append("language", "ger");
@@ -201,6 +206,7 @@ function checkWithOCRSpace(imgData) {
     .then(response => response.json())
     .then(data => {
         if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            setBackgroundColor('green');
             evaluateSpaceData(data);
         } else {
             console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
@@ -216,6 +222,20 @@ function evaluateSpaceData(data) {
     textOutput.innerText = "OCR.Space Result: " + parsedText;
     console.log("spaceOCR: " + parsedText);
 }
+
+function setBackgroundColor(color) {
+    // Überprüfen, ob der übergebene Parameter eine gültige Zeichenkette ist
+    if (typeof color === 'string' && color.trim() !== '') {
+        // Setzt die Hintergrundfarbe des Body-Elements auf die übergebene Farbe
+        document.body.style.backgroundColor = color;
+    } else {
+        console.error('Bitte geben Sie eine gültige Farbe als Parameter ein.');
+    }
+}
+
+
+setBackgroundColor('gray');
+
 
 // Foto alle 2000ms
 setInterval(takePhoto, 100);
