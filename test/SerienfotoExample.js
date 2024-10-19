@@ -118,7 +118,7 @@ function checkWithTesseract(imageData) {
     return Tesseract.recognize(imageData, 'deu', {
         tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789€.,%gGkKmL+-',
         tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
-        logger: m => {}
+        logger: m => { }
     }).then(({ data: { text } }) => {
         count++;
         const endTime = performance.now();
@@ -203,24 +203,33 @@ function checkWithOCRSpace(imgData) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
-            setBackgroundColor('green');
-            evaluateSpaceData(data);
-        } else {
-            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
-        }
-    })
-    .catch(err => {
-        console.log("Fehler bei OCR.Space API: " + err);
-    });
+        .then(response => response.json())
+        .then(data => {
+            if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+                setBackgroundColor('green');
+                evaluateSpaceData(data);
+            } else {
+                console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+            }
+        })
+        .catch(err => {
+            console.log("Fehler bei OCR.Space API: " + err);
+        });
 }
 
 function evaluateSpaceData(data) {
-    const parsedText = data.ParsedResults[0].ParsedText;
-    textOutput.innerText = "OCR.Space Result: " + parsedText;
-    console.log("spaceOCR: " + parsedText);
+
+    let productPrice = extractProductPrice(data);
+    let productWeight = extractProductWeight(data);
+    let productName = extractProductName(data, productWeight);
+    let pricePerKilo = calculatePricePerKg(productPrice, productWeight);
+
+    textOutput.innerHTML = '<b>' + productName + '</b><br>';
+    textOutput.innerHTML += 'Weight: ' + productWeight + '<br>';
+    textOutput.innerHTML += 'Price: ' + productPrice + '<br>';
+    textOutput.innerHTML += 'Price per Kilo: ' + pricePerKilo;
+
+
 }
 
 function setBackgroundColor(color) {
