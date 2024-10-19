@@ -149,8 +149,8 @@ function createBase64FromBlob(blob) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            let w = 1200;
-            let h = 780;
+            let w = 1980;
+            let h = 1080;
 
             let scaledWidth = w;
             let scaledHeight = h;
