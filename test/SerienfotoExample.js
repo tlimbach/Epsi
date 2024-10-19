@@ -56,7 +56,8 @@ function takePhoto() {
                         }
 
                         // Wenn das Bild nicht gesperrt ist, aktualisiere es
-                        if (!imageLocked) {
+                       // if (!imageLocked) 
+                        {
                             photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7);
                         }
                         photo.style.width = '100%';
@@ -159,8 +160,9 @@ function createBase64FromBlob(blob) {
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
 
-            let w = 1980;
-            let h = 1080;
+            // Kleinere Auflösung für bessere Leistung
+            let w = 1280;
+            let h = 720;
 
             let scaledWidth = w;
             let scaledHeight = h;
@@ -177,6 +179,7 @@ function createBase64FromBlob(blob) {
 
             const croppedCanvas = document.createElement('canvas');
             const croppedContext = croppedCanvas.getContext('2d');
+
             if (img.width < img.height) {
                 croppedCanvas.width = canvas.width;
                 croppedCanvas.height = canvas.height * 0.4;
@@ -187,7 +190,8 @@ function createBase64FromBlob(blob) {
                 croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
             }
 
-            const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.9);
+            // Reduziere die Bildqualität auf 70% (0.7)
+            const base64Data = croppedCanvas.toDataURL('image/jpeg', 0.7);
             resolve(base64Data);
         };
 
@@ -196,6 +200,7 @@ function createBase64FromBlob(blob) {
         };
     });
 }
+
 
 function checkWithOCRSpace(imgData) {
     console.log("Check with OCR...");
