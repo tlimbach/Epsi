@@ -5,6 +5,8 @@ let zuletztDatenMuellerkannt = true;
 
 let originalImageBlob; // Variable zum Speichern des Originalbildes (Blob)
 
+let imageLocked = false;
+
 function takePhoto() {
     if (isProcessing) {
         return;
@@ -54,7 +56,10 @@ function takePhoto() {
                             croppedContext.drawImage(canvas, 0, canvas.height * 0.15, canvas.width, canvas.height * 0.7, 0, 0, croppedCanvas.width, croppedCanvas.height);
                         }
 
-                        photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7);
+
+                        if (!imageLocked) {
+                            photo.src = croppedCanvas.toDataURL('image/jpeg', 0.7);
+                        }
                         photo.style.width = '100%';
 
                         convertToGrayscale(croppedCanvas);
@@ -65,6 +70,11 @@ function takePhoto() {
                             if (isTextFound) {
                                 if (zuletztDatenMuellerkannt) {
                                     zuletztDatenMuellerkannt = false;
+
+                                    imageLocked = true;
+                                    setTimeout(() => {
+                                        imageLocked = false; // Nach 3 Sekunden kann das nächste Bild angezeigt werden
+                                    }, 3000);
 
                                     createBase64FromBlob(originalImageBlob).then(base64ForOCR => {
                                         checkWithOCRSpace(base64ForOCR).finally(() => {
