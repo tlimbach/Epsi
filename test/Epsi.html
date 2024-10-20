@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fotoaufnahme und Tesseract.js OCR</title>
+    <title>Price OCR</title>
     <script src="epsi.js" defer></script>
     <script src="space-ocr-functions.js" defer></script>
     <style>
@@ -13,12 +13,11 @@
             text-align: center;
         }
 
-        #photo {
-            object-fit: contain;
-            max-width: 100%;
-            /* Passt das Bild dynamisch an die Bildschirmbreite an */
-            height: auto;
-            /* Erhält das Seitenverhältnis */
+        #video {
+            width: 50%; /* Das Video nimmt 50% der verfügbaren Breite ein */
+            height: auto; /* Erhält das Seitenverhältnis */
+            margin: 0 auto; /* Zentriert das Video horizontal */
+            display: block; /* Stellt sicher, dass das Video als Block-Element behandelt wird */
         }
 
         #output {
@@ -38,8 +37,6 @@
             /* Zentriert den Button horizontal */
             transform: translateX(-50%);
             /* Korrigiert die Zentrierung */
-            /* width: 50px; */
-            /* Optional: Button über die ganze Breite */
             background-color: #007bff;
             color: white;
             border: none;
