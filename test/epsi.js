@@ -1,6 +1,6 @@
 let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
-let randProzent = 25; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
+let randProzent = 20; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
 
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
@@ -9,6 +9,14 @@ function startVideoStream() {
 
     const width = 1080; // Hochformat-Breite
     const height = 1920; // Hochformat-Höhe
+
+
+    OPTIK!
+    rotes Scannlicht emutlieren
+    Button schönerr Machen
+    Preis pro KG direkt vom preisschild lesne, falls keine gramm angabe verfürgabr isStreamPaused
+
+
 
     navigator.mediaDevices.getUserMedia({
         video: {
