@@ -13,11 +13,27 @@
             text-align: center;
         }
 
+        .video-container {
+            position: relative;
+            width: 50%;
+            margin: 0 auto;
+            display: block;
+        }
+
         #video {
-            width: 50%; /* Das Video nimmt 50% der verfügbaren Breite ein */
-            height: auto; /* Erhält das Seitenverhältnis */
-            margin: 0 auto; /* Zentriert das Video horizontal */
-            display: block; /* Stellt sicher, dass das Video als Block-Element behandelt wird */
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        #overlayCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Macht das Canvas nicht interaktiv */
         }
 
         #output {
@@ -30,19 +46,14 @@
             padding: 10px 20px;
             font-size: 18px;
             position: fixed;
-            /* Fixiert den Button */
             bottom: 20px;
-            /* Positioniert den Button am unteren Rand */
             left: 50%;
-            /* Zentriert den Button horizontal */
             transform: translateX(-50%);
-            /* Korrigiert die Zentrierung */
             background-color: #007bff;
             color: white;
             border: none;
             cursor: pointer;
             z-index: 1000;
-            /* Stellt sicher, dass der Button über anderen Elementen liegt */
         }
 
         button:hover {
@@ -54,8 +65,13 @@
 <body>
     <h1>Price OCR</h1>
 
-    <!-- Video Element für den Livestream -->
-    <video id="video" autoplay playsinline></video>
+    <div class="video-container">
+        <!-- Video Element für den Livestream -->
+        <video id="video" autoplay playsinline></video>
+        <!-- Overlay Canvas, um nicht relevante Bereiche auszublenden -->
+        <canvas id="overlayCanvas"></canvas>
+    </div>
+
     <div id="textOutput">Erkannter Text wird hier angezeigt...</div>
 
     <!-- Der Auslöser-Button -->

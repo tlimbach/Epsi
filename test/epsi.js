@@ -4,6 +4,7 @@ let stream; // Variable für den Videostream
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
     const videoElement = document.getElementById('video');
+    const overlayCanvas = document.getElementById('overlayCanvas'); // Füge overlayCanvas hinzu
 
     const width = 1080; // Hochformat-Breite
     const height = 1920; // Hochformat-Höhe
@@ -20,6 +21,13 @@ function startVideoStream() {
         stream = localStream; // Speichere den Stream für späteres Stoppen
         videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
         videoElement.play(); // Spiele den Stream ab
+
+        // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
+        videoElement.addEventListener('loadedmetadata', () => {
+            overlayCanvas.width = videoElement.videoWidth;
+            overlayCanvas.height = videoElement.videoHeight;
+            drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
+        });
     })
     .catch(error => {
         console.error('Kamera konnte nicht gestartet werden:', error);
@@ -41,7 +49,7 @@ function resumeVideoStream() {
 // Funktion, um den aktuellen Frame des Videos zu nehmen und zu beschneiden
 function captureAndCropFrame() {
     const videoElement = document.getElementById('video');
-    
+
     // Prüfe, ob das Video bereit ist
     if (!videoElement.videoWidth || !videoElement.videoHeight) {
         console.error("Das Video ist noch nicht bereit.");
@@ -84,15 +92,15 @@ function captureAndCropFrame() {
 // Funktion, die OCR.Space mit dem beschnittenen Frame aufruft
 function handlePhotoCapture() {
     const button = document.getElementById('takePhotoBtn');
-    
+
     if (!isStreamPaused) {
         // Stream ist aktiv, pausieren und OCR durchführen
         console.log('Der Fotoauslöser wurde gedrückt.');
         pauseVideoStream(); // Pausiere den Stream
-        
+
         // Hol den aktuellen beschnittenen Frame als Base64
         const base64Image = captureAndCropFrame();
-        
+
         // Prüfe, ob das Bild erfolgreich erfasst wurde
         if (base64Image) {
             // Sende das Base64-Bild an OCR.Space
@@ -118,11 +126,28 @@ function handlePhotoCapture() {
     }
 }
 
+// Funktion, um die nicht relevanten Bereiche auszublenden
+function drawOverlay() {
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const context = overlayCanvas.getContext('2d');
+
+    const videoHeight = overlayCanvas.height;
+    const cropHeight = videoHeight * 0.4; // Beschneide oben und unten 30%
+
+    // Lösche das Canvas und setze die Transparenz
+    context.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+
+    // Zeichne die ausgegrauten Bereiche oben und unten
+    context.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Halbdurchsichtiges Grau
+    context.fillRect(0, 0, overlayCanvas.width, videoHeight * 0.3); // Oben
+    context.fillRect(0, videoHeight * 0.7, overlayCanvas.width, videoHeight * 0.3); // Unten
+}
+
 // Funktion für den Aufruf der OCR.Space API
 function checkWithOCRSpace(base64Image) {
     console.log("Check with OCR...");
     setBackgroundColor('orange');
-    
+
     const startTime = performance.now(); // Startzeit
 
     const formData = new FormData();
