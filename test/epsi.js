@@ -10,12 +10,14 @@ function startVideoStream() {
     const width = 1080; // Hochformat-Breite
     const height = 1920; // Hochformat-Höhe
 
+    /*
 
     OPTIK!
     rotes Scannlicht emutlieren
     Button schönerr Machen
     Preis pro KG direkt vom preisschild lesne, falls keine gramm angabe verfürgabr isStreamPaused
 
+    */
 
 
     navigator.mediaDevices.getUserMedia({
