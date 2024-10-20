@@ -138,7 +138,8 @@ function drawOverlay() {
     context.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
     // Zeichne die ausgegrauten Bereiche oben und unten
-    context.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Halbdurchsichtiges Grau
+    //context.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Halbdurchsichtiges Grau
+    context.fillStyle = 'rgba(20, 20, 20, 0.5)'; // Leichtes und durchscheinendes Weiß
     context.fillRect(0, 0, overlayCanvas.width, videoHeight * 0.3); // Oben
     context.fillRect(0, videoHeight * 0.7, overlayCanvas.width, videoHeight * 0.3); // Unten
 }
