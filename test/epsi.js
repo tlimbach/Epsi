@@ -5,14 +5,15 @@ let stream; // Variable für den Videostream
 function startVideoStream() {
     const videoElement = document.getElementById('video');
     
-    const width = 1920; // FullHD (Originalauflösung)
-    const height = 1080; // FullHD (Originalauflösung)
+    const width = 1080; // FullHD (Originalauflösung)
+    const height = 1920; // FullHD (Originalauflösung)
 
     navigator.mediaDevices.getUserMedia({
         video: { 
             facingMode: 'environment', 
             width: { ideal: width }, 
-            height: { ideal: height } 
+            height: { ideal: height },
+            advanced: [{zoom: 2}]
         }
     })
     .then(localStream => {
