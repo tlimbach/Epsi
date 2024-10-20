@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fotoaufnahme und Tesseract.js OCR</title>
+    <script src="epsi.js" defer></script>
+    <script src="space-ocr-functions.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #photo {
+          object-fit: contain;
+          max-width: 100%; /* Passt das Bild dynamisch an die Bildschirmbreite an */
+          height: auto; /* Erhält das Seitenverhältnis */
+        }
+        #output {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Foto und Tesseract.js OCR</h1>
+
+    <img id="photo" src="" alt="Foto wird geladen...">
+    <div id="textOutput">Erkannter Text wird hier angezeigt...</div>
+</body>
+</html>
