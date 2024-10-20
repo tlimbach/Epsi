@@ -70,6 +70,14 @@ function captureAndCropFrame() {
     // Konvertiere das Canvas in Base64
     const base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
 
+    // Logge die Breite und Höhe des Canvas
+    console.log(`OCR Canvas Breite: ${canvas.width}, Höhe: ${canvas.height}`);
+
+    // Berechne die Größe der Base64-Daten in KB
+    const sizeInBytes = (base64Image.length * (3 / 4)) - ((base64Image.match(/=/g) || []).length);
+    const sizeInKB = (sizeInBytes / 1024).toFixed(2); // Größe in KB gerundet auf 2 Nachkommastellen
+    console.log(`Bildgröße: ${sizeInKB} KB`);
+
     return base64Image;
 }
 
