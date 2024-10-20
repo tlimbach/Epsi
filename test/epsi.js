@@ -1,19 +1,19 @@
 let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
 
-// Starte den Videostream
+// Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
     const videoElement = document.getElementById('video');
-    
-    const width = 1080; // FullHD (Originalauflösung)
-    const height = 1920; // FullHD (Originalauflösung)
+
+    const width = 1080; // Hochformat-Breite
+    const height = 1920; // Hochformat-Höhe
 
     navigator.mediaDevices.getUserMedia({
-        video: { 
-            facingMode: 'environment', 
-            width: { ideal: width }, 
+        video: {
+            facingMode: 'environment', // Kamera auf der Rückseite des Telefons
+            width: { ideal: width },
             height: { ideal: height },
-            advanced: [{zoom: 2}]
+            advanced: [{ zoom: 2 }] // Setze den Zoomfaktor auf 2
         }
     })
     .then(localStream => {
@@ -26,30 +26,46 @@ function startVideoStream() {
     });
 }
 
-// Funktion, um den Videostream anzuhalten (pausieren, aber Bild beibehalten)
+// Funktion, um den Stream anzuhalten
 function pauseVideoStream() {
     const videoElement = document.getElementById('video');
     videoElement.pause(); // Pausiere den Stream, aber das letzte Bild bleibt sichtbar
 }
 
-// Funktion, um den Videostream fortzusetzen
+// Funktion, um den Stream fortzusetzen
 function resumeVideoStream() {
     const videoElement = document.getElementById('video');
-    videoElement.play(); // Spiele den Stream wieder ab
+    videoElement.play(); // Setze den Stream fort
 }
 
-// Funktion, um den aktuellen Frame des Videos zu nehmen
-function captureFrameFromVideo() {
+// Funktion, um den aktuellen Frame des Videos zu nehmen und zu beschneiden
+function captureAndCropFrame() {
     const videoElement = document.getElementById('video');
+    
+    // Prüfe, ob das Video bereit ist
+    if (!videoElement.videoWidth || !videoElement.videoHeight) {
+        console.error("Das Video ist noch nicht bereit.");
+        return null; // Wenn das Video noch nicht bereit ist, kehre zurück
+    }
+
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
-    // Setze die Canvas-Größe auf die des Videos
-    canvas.width = videoElement.videoWidth;
-    canvas.height = videoElement.videoHeight;
+    // Setze die Canvas-Größe auf das Video, aber nur auf den relevanten Teil (z.B. Mitte)
+    const videoWidth = videoElement.videoWidth;
+    const videoHeight = videoElement.videoHeight;
 
-    // Zeichne den aktuellen Frame des Videos auf das Canvas
-    context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    // Logge Breite und Höhe zur Fehlerbehebung
+    console.log(`Video Breite: ${videoWidth}, Höhe: ${videoHeight}`);
+
+    const cropWidth = videoWidth; // Nimm die volle Breite
+    const cropHeight = videoHeight * 0.4; // Schneide oben und unten 30% ab
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+
+    // Zeichne den mittleren Teil des Videos auf das Canvas
+    context.drawImage(videoElement, 0, videoHeight * 0.3, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
     // Konvertiere das Canvas in Base64
     const base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
@@ -57,7 +73,7 @@ function captureFrameFromVideo() {
     return base64Image;
 }
 
-// Funktion, die OCR.Space mit dem aktuellen Frame aufruft
+// Funktion, die OCR.Space mit dem beschnittenen Frame aufruft
 function handlePhotoCapture() {
     const button = document.getElementById('takePhotoBtn');
     
@@ -66,15 +82,20 @@ function handlePhotoCapture() {
         console.log('Der Fotoauslöser wurde gedrückt.');
         pauseVideoStream(); // Pausiere den Stream
         
-        // Hol den aktuellen Frame als Base64
-        const base64Image = captureFrameFromVideo();
+        // Hol den aktuellen beschnittenen Frame als Base64
+        const base64Image = captureAndCropFrame();
+        
+        // Prüfe, ob das Bild erfolgreich erfasst wurde
+        if (base64Image) {
+            // Sende das Base64-Bild an OCR.Space
+            checkWithOCRSpace(base64Image);
 
-        // Sende das Base64-Bild an OCR.Space
-        checkWithOCRSpace(base64Image);
-
-        // Button-Text ändern
-        button.textContent = "Stream fortsetzen";
-        isStreamPaused = true;
+            // Button-Text ändern
+            button.textContent = "Stream fortsetzen";
+            isStreamPaused = true;
+        } else {
+            console.error('Kein Bild konnte erfasst werden.');
+        }
     } else {
         // Stream ist pausiert, zurücksetzen und den Stream wieder starten
         console.log('Stream wird fortgesetzt.');
