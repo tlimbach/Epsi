@@ -1,5 +1,6 @@
 let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
+let randProzent = 25; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
 
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
@@ -59,7 +60,7 @@ function captureAndCropFrame() {
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
 
-    // Setze die Canvas-Größe auf das Video, aber nur auf den relevanten Teil (z.B. Mitte)
+    // Setze die Canvas-Größe auf das Video, aber nur auf den relevanten Teil (basierend auf randProzent)
     const videoWidth = videoElement.videoWidth;
     const videoHeight = videoElement.videoHeight;
 
@@ -67,13 +68,14 @@ function captureAndCropFrame() {
     console.log(`Video Breite: ${videoWidth}, Höhe: ${videoHeight}`);
 
     const cropWidth = videoWidth; // Nimm die volle Breite
-    const cropHeight = videoHeight * 0.4; // Schneide oben und unten 30% ab
+    const cropHeight = videoHeight * (1 - (randProzent / 100) * 2); // Schneide oben und unten gemäß randProzent ab
 
     canvas.width = cropWidth;
     canvas.height = cropHeight;
 
     // Zeichne den mittleren Teil des Videos auf das Canvas
-    context.drawImage(videoElement, 0, videoHeight * 0.3, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
+    const cropStartY = videoHeight * (randProzent / 100); // Beginne den Ausschnitt gemäß randProzent
+    context.drawImage(videoElement, 0, cropStartY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
     // Konvertiere das Canvas in Base64
     const base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
@@ -132,16 +134,15 @@ function drawOverlay() {
     const context = overlayCanvas.getContext('2d');
 
     const videoHeight = overlayCanvas.height;
-    const cropHeight = videoHeight * 0.4; // Beschneide oben und unten 30%
+    const cropHeight = videoHeight * (randProzent / 100); // Beschneide oben und unten gemäß randProzent
 
     // Lösche das Canvas und setze die Transparenz
     context.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
 
     // Zeichne die ausgegrauten Bereiche oben und unten
-    //context.fillStyle = 'rgba(0, 0, 0, 0.5)'; // Halbdurchsichtiges Grau
-    context.fillStyle = 'rgba(20, 20, 20, 0.5)'; // Leichtes und durchscheinendes Weiß
-    context.fillRect(0, 0, overlayCanvas.width, videoHeight * 0.3); // Oben
-    context.fillRect(0, videoHeight * 0.7, overlayCanvas.width, videoHeight * 0.3); // Unten
+    context.fillStyle = 'rgba(20, 20, 20, 0.5)'; // Leichtes und durchscheinendes Grau
+    context.fillRect(0, 0, overlayCanvas.width, cropHeight); // Oben
+    context.fillRect(0, videoHeight - cropHeight, overlayCanvas.width, cropHeight); // Unten
 }
 
 // Funktion für den Aufruf der OCR.Space API
