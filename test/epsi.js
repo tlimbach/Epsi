@@ -198,7 +198,17 @@ function evaluateSpaceData(data) {
     let productPrice = extractProductPrice(data);
     let productWeight = extractProductWeight(data);
     let productName = extractProductName(data, productWeight);
-    let pricePerKilo = calculatePricePerKg(productPrice, productWeight);
+    
+    // Berechne den Preis pro Kilogramm
+    let pricePerKiloCalculated = calculatePricePerKg(productPrice, productWeight);
+
+    // Falls der berechnete Preis ungültig ist, extrahiere den Preis pro Kilogramm direkt vom Preisschild
+    let pricePerKilo;
+    if (pricePerKiloCalculated.startsWith("Ungültig")) {
+        pricePerKilo = extractPricePerKg(data); // Direkt vom Preisschild extrahiert
+    } else {
+        pricePerKilo = pricePerKiloCalculated; // Berechneter Preis
+    }
 
     const textOutput = document.getElementById('textOutput');
     textOutput.innerHTML = `<b>${productName}</b><br>

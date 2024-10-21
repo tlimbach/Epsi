@@ -189,31 +189,38 @@ function extractProductPrice(data) {
 
 function extractProductWeight(data) {
     let weightPattern = /(\d+\s?-?\s?(g|kg|G|KG))/;  // Muster für Gewicht in Gramm oder Kilogramm
+    let pricePattern = /(\d+[.,]\d{2}|[.,]\d{2})/;   // Muster für Preis im Format X.XX, X,XX oder -.99
     let weightCandidates = [];
 
     // Durchsuche die JSON-Daten nach Gewichtskandidaten und speichere deren Bounding Boxen
     data.ParsedResults[0].TextOverlay.Lines.forEach(line => {
-        line.Words.forEach(word => {
-            if (weightPattern.test(word.WordText)) {
-                // Berechne die Größe der Bounding Box (Breite * Höhe)
-                const boundingBoxSize = word.Width * word.Height;
-                weightCandidates.push({
-                    weight: word.WordText,
-                    size: boundingBoxSize
+        // Überprüfe, ob in der Zeile ein Preis vorkommt
+        let containsPrice = pricePattern.test(line.LineText);
+
+        // Wenn ein Preis in der Zeile vorkommt, überspringe sie als Gewichtskandidat
+        if (!containsPrice) {
+            line.Words.forEach(word => {
+                if (weightPattern.test(word.WordText)) {
+                    // Berechne die Größe der Bounding Box (Breite * Höhe)
+                    const boundingBoxSize = word.Width * word.Height;
+                    weightCandidates.push({
+                        weight: word.WordText,
+                        size: boundingBoxSize
+                    });
+                }
+            });
+
+            // Zusätzliche Überprüfung für kombinierte Gewichtszeilen wie "250 g"
+            let combinedWeights = line.LineText.match(weightPattern);
+            if (combinedWeights) {
+                combinedWeights.forEach(matchedWeight => {
+                    const boundingBoxSize = line.Words.reduce((total, word) => total + word.Width * word.Height, 0);  // Größe der Bounding Box der gesamten Zeile
+                    weightCandidates.push({
+                        weight: matchedWeight,
+                        size: boundingBoxSize
+                    });
                 });
             }
-        });
-
-        // Zusätzliche Überprüfung für kombinierte Gewichtszeilen wie "250 g 1 kg = 9.00"
-        let combinedWeights = line.LineText.match(weightPattern);
-        if (combinedWeights) {
-            combinedWeights.forEach(matchedWeight => {
-                const boundingBoxSize = line.Words.reduce((total, word) => total + word.Width * word.Height, 0);  // Größe der Bounding Box der gesamten Zeile
-                weightCandidates.push({
-                    weight: matchedWeight,
-                    size: boundingBoxSize
-                });
-            });
         }
     });
 
