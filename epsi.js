@@ -216,6 +216,22 @@ function checkWithOCRSpace(base64Image) {
     });
 }
 
+function adjustFontSize(element) {
+    const maxFontSize = 26; // Maximale Schriftgröße
+    const minFontSize = 20; // Minimale Schriftgröße
+    const maxChars = 20; // Maximale Anzahl von Zeichen, ab der die Schriftgröße reduziert wird
+
+    const textLength = element.textContent.length;
+
+    // Berechne die Schriftgröße basierend auf der Länge des Textes
+    if (textLength > maxChars) {
+        let newSize = Math.max(minFontSize, maxFontSize - (textLength - maxChars)); // Reduziere Schriftgröße
+        element.style.fontSize = `${newSize}px`;
+    } else {
+        element.style.fontSize = `${maxFontSize}px`; // Standardgröße, wenn die Länge unter maxChars bleibt
+    }
+}
+
 function evaluateSpaceData(data) {
     let productPrice = extractProductPrice(data);
     let productWeight = extractProductWeight(data);
@@ -228,10 +244,21 @@ function evaluateSpaceData(data) {
     }
 
     // Schreibe die Ergebnisse in die jeweiligen Divs (in den Bereich mit der Klasse 'value')
-    document.querySelector('#productName .value').innerHTML = productName;
-    document.querySelector('#productPrice .value').innerHTML = productPrice;
-    document.querySelector('#productWeight .value').innerHTML = productWeight;
-    document.querySelector('#productPreisKg .value').innerHTML = pricePerKilo;
+    const nameElement = document.querySelector('#productName .value');
+    const priceElement = document.querySelector('#productPrice .value');
+    const weightElement = document.querySelector('#productWeight .value');
+    const priceKgElement = document.querySelector('#productPreisKg .value');
+
+    nameElement.innerHTML = productName;
+    priceElement.innerHTML = productPrice;
+    weightElement.innerHTML = productWeight;
+    priceKgElement.innerHTML = pricePerKilo;
+
+    // Passe die Schriftgröße für jedes Feld an
+    adjustFontSize(nameElement);
+    adjustFontSize(priceElement);
+    adjustFontSize(weightElement);
+    adjustFontSize(priceKgElement);
 
     // Mache die Ergebnis-DIVs sichtbar
     document.querySelectorAll('.output-box').forEach(box => {
