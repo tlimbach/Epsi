@@ -248,7 +248,7 @@ function evaluateSpaceData(data) {
 
     // Verwende die Funktion extractPricePerKg, wenn calculatePricePerKg kein Ergebnis liefert
     if (pricePerKilo.startsWith("U")) {
-        pricePerKilo = ;
+        pricePerKilo = extractedPricePerKg;
     }
 
     
