@@ -1,20 +1,24 @@
 function extractProductPrice(data) {
+    console.log(JSON.stringify(data, null, 2));
+
     // Muster für Preis im Format X.XX, X,XX oder -.99
-    let pricePattern = /(\d+[.,]\d{2}|[.,]\d{2})/;
+    let pricePattern = /(\d*[.,]\d{2}|[.,]\d{2})/;
     let priceCandidates = [];
 
     // Durchsuche die JSON-Daten nach Preiskandidaten und speichere deren Bounding Boxen
     data.ParsedResults[0].TextOverlay.Lines.forEach(line => {
-        line.Words.forEach(word => {
-            if (pricePattern.test(word.WordText)) {
-                // Berechne die Größe der Bounding Box (Breite * Höhe)
-                const boundingBoxSize = word.Width * word.Height;
-                priceCandidates.push({
-                    price: word.WordText,
-                    size: boundingBoxSize
-                });
-            }
-        });
+        console.log(`Überprüfe Zeile: ${line.LineText}`);
+
+        // Überprüfe die ganze Zeile auf den Preis
+        let matched = line.LineText.match(pricePattern);
+        if (matched) {
+            // Berechne die Größe der Bounding Box (Breite * Höhe)
+            const boundingBoxSize = line.MaxHeight * line.Words.reduce((totalWidth, word) => totalWidth + word.Width, 0);
+            priceCandidates.push({
+                price: matched[0], // Preis aus dem regulären Ausdruck extrahieren
+                size: boundingBoxSize
+            });
+        }
     });
 
     // Falls keine Preiskandidaten gefunden wurden, gib eine entsprechende Meldung aus
@@ -37,7 +41,6 @@ function extractProductPrice(data) {
     // Rückgabe des Preises mit dem €-Symbol
     return recognizedPrice.replace(",", ".") + " €";
 }
-
 
 function extractProductWeight(data) {
     let weightPattern = /(\d+[.,]?\d*\s?(g|kg|G|KG))/;  // Muster für Gewicht in Gramm oder Kilogramm
