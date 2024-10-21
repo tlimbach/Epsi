@@ -2,8 +2,6 @@ let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
 let randProzent = 20; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
 
-let defaultBKColor = '#ddd';
-
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
     const videoElement = document.getElementById('video');
@@ -20,21 +18,21 @@ function startVideoStream() {
             advanced: [{ zoom: 2 }] // Setze den Zoomfaktor auf 2
         }
     })
-        .then(localStream => {
-            stream = localStream; // Speichere den Stream für späteres Stoppen
-            videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
-            videoElement.play(); // Spiele den Stream ab
+    .then(localStream => {
+        stream = localStream; // Speichere den Stream für späteres Stoppen
+        videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
+        videoElement.play(); // Spiele den Stream ab
 
-            // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
-            videoElement.addEventListener('loadedmetadata', () => {
-                overlayCanvas.width = videoElement.videoWidth;
-                overlayCanvas.height = videoElement.videoHeight;
-                drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
-            });
-        })
-        .catch(error => {
-            console.error('Kamera konnte nicht gestartet werden:', error);
+        // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
+        videoElement.addEventListener('loadedmetadata', () => {
+            overlayCanvas.width = videoElement.videoWidth;
+            overlayCanvas.height = videoElement.videoHeight;
+            drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
         });
+    })
+    .catch(error => {
+        console.error('Kamera konnte nicht gestartet werden:', error);
+    });
 }
 
 // Funktion, um den Stream anzuhalten
@@ -159,7 +157,7 @@ function drawOverlay() {
 // Funktion für den Aufruf der OCR.Space API
 function checkWithOCRSpace(base64Image) {
     console.log("Check with OCR...");
-    setBackgroundColor('orange');
+    setBackgroundColor(true); // Start des Erkennungsprozesses
 
     const startTime = performance.now(); // Startzeit
 
@@ -177,22 +175,22 @@ function checkWithOCRSpace(base64Image) {
         },
         body: formData
     })
-        .then(response => response.json())
-        .then(data => {
-            const endTime = performance.now(); // Endzeit
-            const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
-            console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
+    .then(response => response.json())
+    .then(data => {
+        const endTime = performance.now(); // Endzeit
+        const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
+        console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
 
-            if (data && data.ParsedResults && data.ParsedResults.length > 0) {
-                setBackgroundColor(defaultBKColor);
-                evaluateSpaceData(data);
-            } else {
-                console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
-            }
-        })
-        .catch(err => {
-            console.error("Fehler bei der OCR.Space API: " + err);
-        });
+        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+            setBackgroundColor(false); // Erfolgreiche Erkennung
+            evaluateSpaceData(data);
+        } else {
+            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+        }
+    })
+    .catch(err => {
+        console.error("Fehler bei der OCR.Space API: " + err);
+    });
 }
 
 function evaluateSpaceData(data) {
@@ -212,21 +210,22 @@ function evaluateSpaceData(data) {
     document.querySelector('#productWeight .value').innerHTML = productWeight;
     document.querySelector('#productPreisKg .value').innerHTML = pricePerKilo;
 
-     // Mache die Ergebnis-DIVs sichtbar
-     document.querySelectorAll('.output-box').forEach(box => {
+    // Mache die Ergebnis-DIVs sichtbar
+    document.querySelectorAll('.output-box').forEach(box => {
         box.classList.add('visible');
     });
 }
 
-function setBackgroundColor(color) {
-    if (typeof color === 'string' && color.trim() !== '') {
-        document.body.style.backgroundColor = color;
+// Funktion, um den Hintergrund basierend auf der Erkennung zu ändern
+function setBackgroundColor(detectionInProgress) {
+    document.body.classList.remove('orange-bg', 'gray-bg'); // Entferne alle Klassen
+
+    if (detectionInProgress) {
+        document.body.classList.add('orange-bg'); // Färbe orange bei Erkennung
     } else {
-        console.error('Bitte geben Sie eine gültige Farbe als Parameter ein.');
+        document.body.classList.add('gray-bg'); // Färbe grau nach Erkennung
     }
 }
-
-setBackgroundColor(defaultBKColor);
 
 // Event Listener für den Fotoauslöser
 document.getElementById('takePhotoBtn').addEventListener('click', handlePhotoCapture);

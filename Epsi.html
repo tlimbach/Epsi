@@ -11,6 +11,18 @@
         body {
             font-family: Arial, sans-serif;
             text-align: center;
+            transition: background-color 0.5s ease;
+            /* Hintergrundfarbe Übergang */
+        }
+
+        body.orange-bg {
+            background-color: orange;
+            /* Farbe nach dem Auslösen */
+        }
+
+        body.gray-bg {
+            background-color: #ddd;
+            /* Farbe nach erfolgreicher OCR-Erkennung */
         }
 
         .video-container {
@@ -43,8 +55,10 @@
             width: 80%;
             height: 60px;
             border-radius: 10px;
-            opacity: 0.2; /* Anfangszustand: 80% transparent */
-            transition: opacity 0.5s ease; /* Weicher Übergang bei Änderung der Transparenz */
+            opacity: 0.2;
+            /* Anfangszustand: 80% transparent */
+            transition: opacity 0.5s ease;
+            /* Weicher Übergang bei Änderung der Transparenz */
         }
 
         .visible {
@@ -85,7 +99,6 @@
             cursor: pointer;
             z-index: 1000;
         }
-      
     </style>
 </head>
 
