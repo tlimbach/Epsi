@@ -48,6 +48,7 @@
         <p><strong>Produktpreis:</strong> <span id="productPrice">-</span></p>
         <p><strong>Produktgewicht:</strong> <span id="productWeight">-</span></p>
         <p><strong>Preis pro Kg:</strong> <span id="pricePerKg">-</span></p>
+        <p><strong>PPK gelesen:</strong><span id="readPricePerKg">-</span></p>
     </div>
 
     <script src="space-ocr-functions.js"></script> <!-- Verweis auf die externe Script-Datei -->
@@ -63,6 +64,7 @@
         const productPriceField = document.getElementById('productPrice');
         const productWeightField = document.getElementById('productWeight');
         const pricePerKgField = document.getElementById('pricePerKg');
+        const readPricePerKgField = document.getElementById('readPricePerKg');
 
         // Prevent default drag behaviors
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -159,12 +161,14 @@
                                 const productWeight = extractProductWeight(data);
                                 const pricePerKg = calculatePricePerKg(productPrice, productWeight);
                                 const productName = extractProductName(data, productWeight);
+                                const readPricePerKg = extractPricePerKg(data);
 
                                 // Daten anzeigen
                                 productNameField.innerText = productName;
                                 productPriceField.innerText = productPrice;
                                 productWeightField.innerText = productWeight;
                                 pricePerKgField.innerText = pricePerKg;
+                                readPricePerKgField.innerText = readPricePerKg
                             }
                         })
                         .catch(error => {

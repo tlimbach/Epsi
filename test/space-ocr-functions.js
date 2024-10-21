@@ -166,7 +166,42 @@ function extractProductName(data, productWeight) {
 
 
 
+function extractPricePerKg(data) {
+    // Muster für Preis pro Kilogramm im Format "1 kg = X.XX" oder "1 kg X,XX"
+    let pricePerKgPattern = /1\s*kg\s*[=]?\s*([\d.,]+)/i;
+    let pricePerKgCandidates = [];
 
+    // Durchsuche die JSON-Daten nach Kandidaten für den Preis pro Kilo
+    data.ParsedResults[0].TextOverlay.Lines.forEach(line => {
+
+        console.log(line);
+
+        let matched = line.LineText.match(pricePerKgPattern);
+        if (matched) {
+            // Berechne die Größe der Bounding Box (Breite * Höhe)
+            const boundingBoxSize = line.MaxHeight * line.Words.reduce((totalWidth, word) => totalWidth + word.Width, 0);
+            pricePerKgCandidates.push({
+                price: matched[1], // Preis aus dem regulären Ausdruck extrahieren
+                size: boundingBoxSize
+            });
+        }
+    });
+
+    // Falls keine Preis pro Kilo Angaben gefunden wurden, gib eine entsprechende Meldung aus
+    if (pricePerKgCandidates.length === 0) {
+        return "Kein Preis pro Kg gefunden";
+    }
+
+    // Wähle den Kandidaten mit der größten Bounding Box (der meiste Platz auf dem Preisschild)
+    let largestPricePerKgCandidate = pricePerKgCandidates.reduce((prev, curr) => {
+        return (curr.size > prev.size) ? curr : prev;
+    });
+
+    let recognizedPricePerKg = largestPricePerKgCandidate.price;
+
+    // Rückgabe des Preises pro Kilogramm mit dem €-Symbol
+    return recognizedPricePerKg.replace(",", ".") + " €";
+}
 
 
 
