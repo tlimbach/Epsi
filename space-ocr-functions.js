@@ -40,7 +40,7 @@ function extractProductPrice(data) {
 
 
 function extractProductWeight(data) {
-    let weightPattern = /(\d+\s?-?\s?(g|kg|G|KG))/;  // Muster für Gewicht in Gramm oder Kilogramm
+    let weightPattern = /(\d+[.,]?\d*\s?(g|kg|G|KG))/;  // Muster für Gewicht in Gramm oder Kilogramm
     let pricePerKgPattern = /1\s*kg\s*[=]?\s*([\d.,]+)/i; // Muster für "1 kg = X.XX"
     let weightCandidates = [];
 
@@ -55,10 +55,18 @@ function extractProductWeight(data) {
                 if (weightPattern.test(word.WordText)) {
                     // Berechne die Größe der Bounding Box (Breite * Höhe)
                     const boundingBoxSize = word.Width * word.Height;
-                    weightCandidates.push({
-                        weight: word.WordText,
-                        size: boundingBoxSize
-                    });
+                    
+                    // Extrahiere den numerischen Teil des Gewichts und prüfe, ob er gültig ist
+                    let weightValue = word.WordText.match(/\d+[.,]?\d*/); // Zahlenanteil extrahieren
+                    let unit = word.WordText.match(/(g|kg|G|KG)/); // Einheit extrahieren
+
+                    // Stellen sicher, dass der Zahlenanteil keine Buchstaben enthält und eine gültige Einheit hat
+                    if (weightValue && unit && !/[a-zA-Z]/.test(weightValue[0])) {
+                        weightCandidates.push({
+                            weight: weightValue[0] + unit[0], // Kombiniere die Zahl und die Einheit
+                            size: boundingBoxSize
+                        });
+                    }
                 }
             });
 
@@ -84,10 +92,8 @@ function extractProductWeight(data) {
     // Priorisiere "g"-Angaben über "kg"
     let selectedWeight = weightCandidates.find(candidate => /g|G/.test(candidate.weight)) || weightCandidates[0];
 
-    // Sonderfallbehandlung für Fehlerkennungen (z.B. "100 9" statt "100 g")
-    if (selectedWeight.weight.includes('9') && !selectedWeight.weight.toLowerCase().includes('kg')) {
-        selectedWeight.weight = selectedWeight.weight.replace('9', 'g');
-    }
+    // Entferne die Sonderfallbehandlung, die "9" durch "g" ersetzt
+    // Es wird nur noch geprüft, ob das Gewicht eine gültige Einheit hat
 
     return selectedWeight.weight;
 }
