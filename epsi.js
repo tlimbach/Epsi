@@ -250,6 +250,27 @@ function evaluateSpaceData(data) {
         pricePerKilo = extractPricePerKg(data);
     }
 
+    
+    // Falls productWeight unbekannt ist, aber productPrice und pricePerKilo bekannt sind, berechne productWeight
+    if ((!productWeight || productWeight === "Kein Gewicht gefunden") && pricePerKilo && productPrice) {
+        // Extrahiere numerische Werte aus pricePerKilo und productPrice
+        const pricePerKgValue = parseFloat(pricePerKilo.replace("€", "").trim());
+        const productPriceValue = parseFloat(productPrice.replace("€", "").trim());
+
+        if (!isNaN(pricePerKgValue) && !isNaN(productPriceValue) && pricePerKgValue > 0) {
+            // Berechne das Produktgewicht in Kilogramm
+            const weightInKg = productPriceValue / pricePerKgValue;
+
+            // Wenn das Gewicht weniger als 1 Kilogramm ist, in Gramm umwandeln
+            if (weightInKg < 1) {
+                const weightInGrams = (weightInKg * 1000).toFixed(0); // Runden auf ganze Gramm
+                productWeight = `${weightInGrams} g`;
+            } else {
+                productWeight = `${weightInKg.toFixed(3)} kg`; // Runden auf 3 Nachkommastellen für Kilogramm
+            }
+        }
+    }
+
     // Schreibe die Ergebnisse in die jeweiligen Divs (in den Bereich mit der Klasse 'value')
     const nameElement = document.querySelector('#productName .value');
     const priceElement = document.querySelector('#productPrice .value');

@@ -155,6 +155,7 @@
                             } else {
                                 // Vollständigen Text anzeigen
                                 output.innerText = "Erkannter Text:\n" + data.ParsedResults[0].ParsedText;
+                                output.innerText += "total:\n" + data;
 
                                 // Zusätzliche Daten extrahieren
                                 const productPrice = extractProductPrice(data);
@@ -169,6 +170,8 @@
                                 productWeightField.innerText = productWeight;
                                 pricePerKgField.innerText = pricePerKg;
                                 readPricePerKgField.innerText = readPricePerKg
+
+                              //  console.log( JSON.stringify(data, null, 2));
                             }
                         })
                         .catch(error => {

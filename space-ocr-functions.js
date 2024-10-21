@@ -174,8 +174,9 @@ function extractProductName(data, productWeight) {
 
 
 function extractPricePerKg(data) {
+
     // Muster für Preis pro Kilogramm im Format "1 kg = X.XX" oder "1 kg X,XX"
-    let pricePerKgPattern = /1\s*kg\s*[=]?\s*([\d.,]+)/i;
+    let pricePerKgPattern = /1\s*kg\s*[:=]?\s*€?\s*([\d.,]+)/i;
     let pricePerKgCandidates = [];
 
     // Durchsuche die JSON-Daten nach Kandidaten für den Preis pro Kilo
