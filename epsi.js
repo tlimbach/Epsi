@@ -219,7 +219,7 @@ function checkWithOCRSpace(base64Image) {
 function adjustFontSize(element) {
     const maxFontSize = 26; // Maximale Schriftgröße
     const minFontSize = 20; // Minimale Schriftgröße
-    const maxChars = 20; // Maximale Anzahl von Zeichen, ab der die Schriftgröße reduziert wird
+    const maxChars = 10; // Maximale Anzahl von Zeichen, ab der die Schriftgröße reduziert wird
 
     const textLength = element.textContent.length;
 
