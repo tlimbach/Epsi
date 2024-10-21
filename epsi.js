@@ -240,14 +240,15 @@ function adjustFontSize(element) {
 }
 
 function evaluateSpaceData(data) {
-    let productPrice = extractProductPrice(data);
+    let extractedPricePerKg = extractPricePerKg(data);
+    let productPrice = extractProductPrice(data, extractedPricePerKg);
     let productWeight = extractProductWeight(data);
     let productName = extractProductName(data, productWeight);
     let pricePerKilo = calculatePricePerKg(productPrice, productWeight);
 
     // Verwende die Funktion extractPricePerKg, wenn calculatePricePerKg kein Ergebnis liefert
     if (pricePerKilo.startsWith("U")) {
-        pricePerKilo = extractPricePerKg(data);
+        pricePerKilo = ;
     }
 
     

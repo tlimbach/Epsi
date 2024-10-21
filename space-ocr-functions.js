@@ -1,24 +1,50 @@
-function extractProductPrice(data) {
+function extractProductPrice(data, extractedPricePerKg) {
     console.log(JSON.stringify(data, null, 2));
 
     // Muster für Preis im Format X.XX, X,XX oder -.99
-    let pricePattern = /(\d*[.,]\d{2}|[.,]\d{2})/;
+    let pricePattern = /(\d+[.,]\d{2}|[.,]\d{2})/;
     let priceCandidates = [];
 
     // Durchsuche die JSON-Daten nach Preiskandidaten und speichere deren Bounding Boxen
     data.ParsedResults[0].TextOverlay.Lines.forEach(line => {
         console.log(`Überprüfe Zeile: ${line.LineText}`);
 
-        // Überprüfe die ganze Zeile auf den Preis
-        let matched = line.LineText.match(pricePattern);
-        if (matched) {
-            // Berechne die Größe der Bounding Box (Breite * Höhe)
-            const boundingBoxSize = line.MaxHeight * line.Words.reduce((totalWidth, word) => totalWidth + word.Width, 0);
+        // Verarbeite die Zeile als Ganzes, um auch Sonderfälle wie "-.99" zu erfassen
+        if (pricePattern.test(line.LineText)) {
+            let price = line.LineText.match(pricePattern)[0]; // Preis aus dem regulären Ausdruck extrahieren
+
+            // Prüfe, ob der erkannte Preis der gleiche wie der Preis pro Kilo ist
+            if (price === extractedPricePerKg) {
+                console.log("Erkannter Preis ist der Preis pro Kilo, wird ignoriert.");
+                return; // Überspringe diesen Preis
+            }
+
+            const boundingBoxSize = line.Words.reduce((total, word) => total + word.Width * word.Height, 0);
             priceCandidates.push({
-                price: matched[0], // Preis aus dem regulären Ausdruck extrahieren
+                price: price,
                 size: boundingBoxSize
             });
         }
+
+        // Verarbeite einzelne Worte in der Zeile
+        line.Words.forEach(word => {
+            console.log(`Überprüfe Wort: ${word.WordText}`);
+            if (pricePattern.test(word.WordText)) {
+                let price = word.WordText;
+
+                // Prüfe, ob der erkannte Preis der gleiche wie der Preis pro Kilo ist
+                if (price === extractedPricePerKg) {
+                    console.log("Erkannter Preis ist der Preis pro Kilo, wird ignoriert.");
+                    return; // Überspringe diesen Preis
+                }
+
+                const boundingBoxSize = word.Width * word.Height;
+                priceCandidates.push({
+                    price: price,
+                    size: boundingBoxSize
+                });
+            }
+        });
     });
 
     // Falls keine Preiskandidaten gefunden wurden, gib eine entsprechende Meldung aus
