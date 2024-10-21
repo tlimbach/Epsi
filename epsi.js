@@ -198,23 +198,18 @@ function evaluateSpaceData(data) {
     let productPrice = extractProductPrice(data);
     let productWeight = extractProductWeight(data);
     let productName = extractProductName(data, productWeight);
-    
-    // Berechne den Preis pro Kilogramm
-    let pricePerKiloCalculated = calculatePricePerKg(productPrice, productWeight);
+    let pricePerKilo = calculatePricePerKg(productPrice, productWeight);
 
-    // Falls der berechnete Preis ungültig ist, extrahiere den Preis pro Kilogramm direkt vom Preisschild
-    let pricePerKilo;
-    if (pricePerKiloCalculated.startsWith("Ungültig")) {
-        pricePerKilo = extractPricePerKg(data); // Direkt vom Preisschild extrahiert
-    } else {
-        pricePerKilo = pricePerKiloCalculated; // Berechneter Preis
+    // Verwende die Funktion extractPricePerKg, wenn calculatePricePerKg kein Ergebnis liefert
+    if (pricePerKilo === "Ungültiger oder fehlender Produktpreis" || pricePerKilo === "Ungültiges oder fehlendes Produktgewicht") {
+        pricePerKilo = extractPricePerKg(data);
     }
 
-    const textOutput = document.getElementById('textOutput');
-    textOutput.innerHTML = `<b>${productName}</b><br>
-                            Weight: ${productWeight}<br>
-                            Price: ${productPrice}<br>
-                            Price per Kilo: ${pricePerKilo}`;
+    // Schreibe die Ergebnisse in die jeweiligen Divs (in den Bereich mit der Klasse 'value')
+    document.querySelector('#productName .value').innerHTML = productName;
+    document.querySelector('#productPrice .value').innerHTML = productPrice;
+    document.querySelector('#productWeight .value').innerHTML = productWeight;
+    document.querySelector('#productPreisKg .value').innerHTML = pricePerKilo;
 }
 
 function setBackgroundColor(color) {
