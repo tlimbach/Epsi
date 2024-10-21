@@ -2,6 +2,8 @@ let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
 let randProzent = 20; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
 
+let defaultBKColor = '#ddd';
+
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
     const videoElement = document.getElementById('video');
@@ -9,16 +11,6 @@ function startVideoStream() {
 
     const width = 1080; // Hochformat-Breite
     const height = 1920; // Hochformat-Höhe
-
-    /*
-
-    OPTIK!
-    rotes Scannlicht emutlieren
-    Button schönerr Machen
-    Preis pro KG direkt vom preisschild lesne, falls keine gramm angabe verfürgabr isStreamPaused
-
-    */
-
 
     navigator.mediaDevices.getUserMedia({
         video: {
@@ -28,21 +20,21 @@ function startVideoStream() {
             advanced: [{ zoom: 2 }] // Setze den Zoomfaktor auf 2
         }
     })
-    .then(localStream => {
-        stream = localStream; // Speichere den Stream für späteres Stoppen
-        videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
-        videoElement.play(); // Spiele den Stream ab
+        .then(localStream => {
+            stream = localStream; // Speichere den Stream für späteres Stoppen
+            videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
+            videoElement.play(); // Spiele den Stream ab
 
-        // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
-        videoElement.addEventListener('loadedmetadata', () => {
-            overlayCanvas.width = videoElement.videoWidth;
-            overlayCanvas.height = videoElement.videoHeight;
-            drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
+            // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
+            videoElement.addEventListener('loadedmetadata', () => {
+                overlayCanvas.width = videoElement.videoWidth;
+                overlayCanvas.height = videoElement.videoHeight;
+                drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
+            });
+        })
+        .catch(error => {
+            console.error('Kamera konnte nicht gestartet werden:', error);
         });
-    })
-    .catch(error => {
-        console.error('Kamera konnte nicht gestartet werden:', error);
-    });
 }
 
 // Funktion, um den Stream anzuhalten
@@ -133,7 +125,11 @@ function handlePhotoCapture() {
         button.textContent = "Foto aufnehmen";
 
         // OCR-Ergebnis zurücksetzen
-        document.getElementById('textOutput').innerHTML = "";
+        // Schreibe die Ergebnisse in die jeweiligen Divs (in den Bereich mit der Klasse 'value')
+        document.querySelector('#productName .value').innerHTML = "";
+        document.querySelector('#productPrice .value').innerHTML = "";
+        document.querySelector('#productWeight .value').innerHTML = "";
+        document.querySelector('#productPreisKg .value').innerHTML = "";
         isStreamPaused = false;
     }
 }
@@ -176,22 +172,22 @@ function checkWithOCRSpace(base64Image) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        const endTime = performance.now(); // Endzeit
-        const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
-        console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
+        .then(response => response.json())
+        .then(data => {
+            const endTime = performance.now(); // Endzeit
+            const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
+            console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
 
-        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
-            setBackgroundColor('green');
-            evaluateSpaceData(data);
-        } else {
-            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
-        }
-    })
-    .catch(err => {
-        console.error("Fehler bei der OCR.Space API: " + err);
-    });
+            if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+                setBackgroundColor(defaultBKColor);
+                evaluateSpaceData(data);
+            } else {
+                console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+            }
+        })
+        .catch(err => {
+            console.error("Fehler bei der OCR.Space API: " + err);
+        });
 }
 
 function evaluateSpaceData(data) {
@@ -219,6 +215,8 @@ function setBackgroundColor(color) {
         console.error('Bitte geben Sie eine gültige Farbe als Parameter ein.');
     }
 }
+
+setBackgroundColor(defaultBKColor);
 
 // Event Listener für den Fotoauslöser
 document.getElementById('takePhotoBtn').addEventListener('click', handlePhotoCapture);
