@@ -130,6 +130,11 @@ function handlePhotoCapture() {
         document.querySelector('#productPrice .value').innerHTML = "";
         document.querySelector('#productWeight .value').innerHTML = "";
         document.querySelector('#productPreisKg .value').innerHTML = "";
+
+        document.querySelectorAll('.output-box').forEach(box => {
+            box.classList.remove('visible'); // Klasse entfernen, um Transparenz wiederherzustellen
+        });
+
         isStreamPaused = false;
     }
 }
@@ -206,6 +211,11 @@ function evaluateSpaceData(data) {
     document.querySelector('#productPrice .value').innerHTML = productPrice;
     document.querySelector('#productWeight .value').innerHTML = productWeight;
     document.querySelector('#productPreisKg .value').innerHTML = pricePerKilo;
+
+     // Mache die Ergebnis-DIVs sichtbar
+     document.querySelectorAll('.output-box').forEach(box => {
+        box.classList.add('visible');
+    });
 }
 
 function setBackgroundColor(color) {

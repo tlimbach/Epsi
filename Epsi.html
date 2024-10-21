@@ -42,6 +42,13 @@
             margin: 10px auto;
             width: 80%;
             border-radius: 10px;
+            opacity: 0.2; /* Anfangszustand: 80% transparent */
+            transition: opacity 0.5s ease; /* Weicher Übergang bei Änderung der Transparenz */
+        }
+
+        .output-box.visible {
+            opacity: 1;
+            /* Sobald ein Ergebnis vorliegt, wird die Transparenz auf 100% gesetzt */
         }
 
         .label {
