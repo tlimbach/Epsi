@@ -7,8 +7,11 @@ function startVideoStream() {
     const videoElement = document.getElementById('video');
     const overlayCanvas = document.getElementById('overlayCanvas'); // Füge overlayCanvas hinzu
 
-    const width = 1080; // Hochformat-Breite
-    const height = 1920; // Hochformat-Höhe
+    //const width = 1080; // Hochformat-Breite
+    //const height = 1920; // Hochformat-Höhe
+
+    const width = 720; // Hochformat-Breite
+    const height = 1280; // Hochformat-Höhe
 
     navigator.mediaDevices.getUserMedia({
         video: {
