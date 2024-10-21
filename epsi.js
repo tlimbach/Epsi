@@ -1,7 +1,7 @@
 let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
 let randProzent = 20; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
-let convertToGray = false;
+let convertToGray = true;
 
 
 // Starte den Videostream mit Zoomfaktor 2
@@ -9,13 +9,13 @@ function startVideoStream() {
     const videoElement = document.getElementById('video');
     const overlayCanvas = document.getElementById('overlayCanvas'); // Füge overlayCanvas hinzu
 
-    const width = 1080; // Hochformat-Breite
-    const height = 1920; // Hochformat-Höhe
+   // const width = 1080; // Hochformat-Breite
+   // const height = 1920; // Hochformat-Höhe
 
   
 
-    //const width = 720; // Hochformat-Breite
-    //const height = 1280; // Hochformat-Höhe
+    const width = 720; // Hochformat-Breite
+    const height = 1280; // Hochformat-Höhe
 
     navigator.mediaDevices.getUserMedia({
         video: {
