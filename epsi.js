@@ -133,7 +133,7 @@ function handlePhotoCapture() {
         button.textContent = "Foto aufnehmen";
 
         // OCR-Ergebnis zurücksetzen
-        document.getElementById('textOutput').innerHTML = "Erkannter Text wird hier angezeigt...";
+        document.getElementById('textOutput').innerHTML = "";
         isStreamPaused = false;
     }
 }
