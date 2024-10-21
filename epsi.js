@@ -80,6 +80,9 @@ function captureAndCropFrame() {
     const cropStartY = videoHeight * (randProzent / 100); // Beginne den Ausschnitt gemäß randProzent
     context.drawImage(videoElement, 0, cropStartY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
+    // Konvertiere das Bild in Graustufen
+    convertToGrayscale(context, canvas);
+
     // Konvertiere das Canvas in Base64
     const base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
 
@@ -138,6 +141,23 @@ function handlePhotoCapture() {
 
         isStreamPaused = false;
     }
+}
+
+// Funktion, um das Bild in Graustufen zu konvertieren
+function convertToGrayscale(context, canvas) {
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    for (let i = 0; i < data.length; i += 4) {
+        const red = data[i];
+        const green = data[i + 1];
+        const blue = data[i + 2];
+        // Graustufenwert berechnen
+        const grayscale = red * 0.3 + green * 0.59 + blue * 0.11;
+        data[i] = data[i + 1] = data[i + 2] = grayscale;
+    }
+
+    context.putImageData(imageData, 0, 0);
 }
 
 // Funktion, um die nicht relevanten Bereiche auszublenden
