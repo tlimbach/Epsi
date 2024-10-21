@@ -1,17 +1,21 @@
 let isStreamPaused = false; // Zustand des Streams (läuft oder pausiert)
 let stream; // Variable für den Videostream
 let randProzent = 20; // Prozentualer Wert für den Rand (oben und unten) – initial auf 25% gesetzt
+let convertToGray = false;
+
 
 // Starte den Videostream mit Zoomfaktor 2
 function startVideoStream() {
     const videoElement = document.getElementById('video');
     const overlayCanvas = document.getElementById('overlayCanvas'); // Füge overlayCanvas hinzu
 
-    //const width = 1080; // Hochformat-Breite
-    //const height = 1920; // Hochformat-Höhe
+    const width = 1080; // Hochformat-Breite
+    const height = 1920; // Hochformat-Höhe
 
-    const width = 720; // Hochformat-Breite
-    const height = 1280; // Hochformat-Höhe
+  
+
+    //const width = 720; // Hochformat-Breite
+    //const height = 1280; // Hochformat-Höhe
 
     navigator.mediaDevices.getUserMedia({
         video: {
@@ -81,7 +85,10 @@ function captureAndCropFrame() {
     context.drawImage(videoElement, 0, cropStartY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
     // Konvertiere das Bild in Graustufen
-    convertToGrayscale(context, canvas);
+    if (convertToGray) {
+        convertToGrayscale(context, canvas);
+    }
+
 
     // Konvertiere das Canvas in Base64
     const base64Image = canvas.toDataURL('image/jpeg', 0.7); // 70% Qualität
