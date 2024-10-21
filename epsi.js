@@ -246,7 +246,7 @@ function evaluateSpaceData(data) {
     let pricePerKilo = calculatePricePerKg(productPrice, productWeight);
 
     // Verwende die Funktion extractPricePerKg, wenn calculatePricePerKg kein Ergebnis liefert
-    if (pricePerKilo === "Ungültiger oder fehlender Produktpreis" || pricePerKilo === "Ungültiges oder fehlendes Produktgewicht") {
+    if (pricePerKilo.startsWith("U") {
         pricePerKilo = extractPricePerKg(data);
     }
 
