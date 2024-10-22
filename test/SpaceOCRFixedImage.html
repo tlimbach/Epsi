@@ -158,11 +158,12 @@
                                 output.innerText += "total:\n" + data;
 
                                 // Zusätzliche Daten extrahieren
+                                const readPricePerKg = extractPricePerKg(data);
                                 const productPrice = extractProductPrice(data);
                                 const productWeight = extractProductWeight(data);
                                 const pricePerKg = calculatePricePerKg(productPrice, productWeight);
                                 const productName = extractProductName(data, productWeight);
-                                const readPricePerKg = extractPricePerKg(data);
+                              
 
                                 // Daten anzeigen
                                 productNameField.innerText = productName;

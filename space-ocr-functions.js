@@ -209,23 +209,20 @@ function extractProductName(data, productWeight) {
 
 
 function extractPricePerKg(data) {
-
     // Muster für Preis pro Kilogramm im Format "1 kg = X.XX" oder "1 kg X,XX"
     let pricePerKgPattern = /1\s*kg\s*[:=]?\s*€?\s*([\d.,]+)/i;
     let pricePerKgCandidates = [];
 
     // Durchsuche die JSON-Daten nach Kandidaten für den Preis pro Kilo
-    data.ParsedResults[0].TextOverlay.Lines.forEach(line => {
-
-        console.log(line);
-
+    data.ParsedResults[0].TextOverlay.Lines.forEach((line, lineIndex) => {
         let matched = line.LineText.match(pricePerKgPattern);
         if (matched) {
             // Berechne die Größe der Bounding Box (Breite * Höhe)
             const boundingBoxSize = line.MaxHeight * line.Words.reduce((totalWidth, word) => totalWidth + word.Width, 0);
             pricePerKgCandidates.push({
                 price: matched[1], // Preis aus dem regulären Ausdruck extrahieren
-                size: boundingBoxSize
+                size: boundingBoxSize,
+                lineIndex: lineIndex // Speichere den Index der Zeile
             });
         }
     });
@@ -241,6 +238,9 @@ function extractPricePerKg(data) {
     });
 
     let recognizedPricePerKg = largestPricePerKgCandidate.price;
+
+    // Entferne die verwendete Zeile aus den Daten, damit andere Funktionen diese nicht mehr verarbeiten
+    data.ParsedResults[0].TextOverlay.Lines.splice(largestPricePerKgCandidate.lineIndex, 1);
 
     // Rückgabe des Preises pro Kilogramm mit dem €-Symbol
     return recognizedPricePerKg.replace(",", ".") + " €";
