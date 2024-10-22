@@ -1,7 +1,7 @@
 {
     "name": "Epsi",
     "short_name": "Epsi",
-    "start_url": "Epsi.html",
+    "start_url": "index.html",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#009d2a",
