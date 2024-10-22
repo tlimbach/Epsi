@@ -25,19 +25,39 @@
             /* Farbe nach erfolgreicher OCR-Erkennung */
         }
 
-        .video-container {
+        /*        .video-container {
             position: relative;
             width: 90%;
             margin: 0 auto;
             display: block;
             border-radius: 15px;
             /* Abgerundete Ecken für den Container */
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            /* Weicher Schatten für 3D-Effekt */
-            transform: perspective(1000px) translateZ(0);
-            /* Perspektive für einen subtilen 3D-Touch */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        /* Weicher Schatten für 3D-Effekt */
+        transform: perspective(1000px) translateZ(0);
+        /* Perspektive für einen subtilen 3D-Touch */
+        transition: transform 0.3s ease,
+        box-shadow 0.3s ease;
+        /* Weicher Übergang für Transform und Schatten */
+        }*/ 
+        
+        
+        .video-container {
+            position: relative;
+            width: 90%;
+            margin: 0 auto;
+            display: block;
+            border-radius: 15px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.2));
+            /* Randverlauf für Tiefeneffekt */
+            box-shadow:
+                inset 0 30px 50px rgba(0, 0, 0, 0.9),
+                /* Sehr tiefer innerer Schatten */
+                0 10px 30px rgba(0, 0, 0, 0.4);
+            /* Starker äußerer Schatten */
+            transform: perspective(1000px) translateZ(-50px);
+            /* Stärkere Perspektive und Tiefe */
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            /* Weicher Übergang für Transform und Schatten */
         }
 
         #video {
