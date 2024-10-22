@@ -116,6 +116,38 @@
             cursor: pointer;
             z-index: 1000;
         }
+
+        /* Scan-Linie, die über das Video verläuft */
+        #scanLine {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 2px;
+            height: 100%;
+            background-color: red;
+            opacity: 0.8;
+            display: none;
+            /* Linie standardmäßig verstecken */
+            animation: scan-animation 3s linear infinite;
+            /* Endlos laufende Animation */
+        }
+
+        /* Keyframes für die Scan-Linie, um sie hin- und herbewegen zu lassen */
+        @keyframes scan-animation {
+            0% {
+                left: 0;
+            }
+
+            50% {
+                left: 100%;
+            }
+
+            100% {
+                left: 0;
+            }
+        }
+
+
     </style>
 </head>
 
@@ -126,6 +158,8 @@
         <video id="video" autoplay playsinline></video>
         <!-- Overlay Canvas, um nicht relevante Bereiche auszublenden -->
         <canvas id="overlayCanvas"></canvas>
+         <!-- Scan-Linie, die über das Video läuft und den Scan-Effekt erzeugt -->
+         <div id="scanLine"></div>
     </div>
 
     <!-- Umrahmte Bereiche für die Ausgaben -->
