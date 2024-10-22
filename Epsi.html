@@ -122,14 +122,16 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 2px;
+            width: 3px;
             height: 100%;
             background-color: red;
             opacity: 0.8;
             display: none;
             /* Linie standardmäßig verstecken */
-            animation: scan-animation 3s linear infinite;
+            animation: scan-animation 5s linear infinite;
             /* Endlos laufende Animation */
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.8), /* Leuchtender Kern */
+                        0 0 15px rgba(255, 0, 0, 0.5); /* Weichere Ränder */
         }
 
         /* Keyframes für die Scan-Linie, um sie hin- und herbewegen zu lassen */
