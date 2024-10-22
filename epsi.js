@@ -223,6 +223,7 @@ function checkWithOCRSpace(base64Image) {
     });
 }
 
+
 function adjustFontSize(element) {
     const maxFontSize = 26; // Maximale Schriftgröße
     const minFontSize = 20; // Minimale Schriftgröße
@@ -300,10 +301,14 @@ function setBackgroundColor(detectionInProgress) {
     document.body.classList.remove('orange-bg', 'gray-bg'); // Entferne alle Klassen
 
     if (detectionInProgress) {
+        document.getElementById("scanLine").style.display = "block"; // Linie anzeigen
         document.body.classList.add('orange-bg'); // Färbe orange bei Erkennung
     } else {
+        document.getElementById("scanLine").style.display = "none"; // Linie ausblenden
         document.body.classList.add('gray-bg'); // Färbe grau nach Erkennung
     }
+
+
 }
 
 // Event Listener für den Fotoauslöser
