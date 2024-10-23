@@ -9,10 +9,10 @@ function startVideoStream() {
     const videoElement = document.getElementById('video');
     const overlayCanvas = document.getElementById('overlayCanvas'); // Füge overlayCanvas hinzu
 
-   // const width = 1080; // Hochformat-Breite
-   // const height = 1920; // Hochformat-Höhe
+    // const width = 1080; // Hochformat-Breite
+    // const height = 1920; // Hochformat-Höhe
 
-  
+
 
     const width = 720; // Hochformat-Breite
     const height = 1280; // Hochformat-Höhe
@@ -25,21 +25,21 @@ function startVideoStream() {
             advanced: [{ zoom: 2 }] // Setze den Zoomfaktor auf 2
         }
     })
-    .then(localStream => {
-        stream = localStream; // Speichere den Stream für späteres Stoppen
-        videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
-        videoElement.play(); // Spiele den Stream ab
+        .then(localStream => {
+            stream = localStream; // Speichere den Stream für späteres Stoppen
+            videoElement.srcObject = stream; // Setze den Videostream auf das Videoelement
+            videoElement.play(); // Spiele den Stream ab
 
-        // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
-        videoElement.addEventListener('loadedmetadata', () => {
-            overlayCanvas.width = videoElement.videoWidth;
-            overlayCanvas.height = videoElement.videoHeight;
-            drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
+            // Sobald das Video Metadaten geladen hat (wie Breite und Höhe), setze die Canvas-Größe und zeichne das Overlay
+            videoElement.addEventListener('loadedmetadata', () => {
+                overlayCanvas.width = videoElement.videoWidth;
+                overlayCanvas.height = videoElement.videoHeight;
+                drawOverlay(); // Rufe hier drawOverlay auf, um die grauen Bereiche zu zeichnen
+            });
+        })
+        .catch(error => {
+            console.error('Kamera konnte nicht gestartet werden:', error);
         });
-    })
-    .catch(error => {
-        console.error('Kamera konnte nicht gestartet werden:', error);
-    });
 }
 
 // Funktion, um den Stream anzuhalten
@@ -205,22 +205,22 @@ function checkWithOCRSpace(base64Image) {
         },
         body: formData
     })
-    .then(response => response.json())
-    .then(data => {
-        const endTime = performance.now(); // Endzeit
-        const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
-        console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
+        .then(response => response.json())
+        .then(data => {
+            const endTime = performance.now(); // Endzeit
+            const recognitionTime = (endTime - startTime).toFixed(2); // Zeitdifferenz in ms
+            console.log(`OCR.Space Erkennung dauerte: ${recognitionTime} ms`);
 
-        if (data && data.ParsedResults && data.ParsedResults.length > 0) {
-            setBackgroundColor(false); // Erfolgreiche Erkennung
-            evaluateSpaceData(data);
-        } else {
-            console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
-        }
-    })
-    .catch(err => {
-        console.error("Fehler bei der OCR.Space API: " + err);
-    });
+            if (data && data.ParsedResults && data.ParsedResults.length > 0) {
+                setBackgroundColor(false); // Erfolgreiche Erkennung
+                evaluateSpaceData(data);
+            } else {
+                console.log("Fehler: Keine Ergebnisse von OCR.Space erhalten.");
+            }
+        })
+        .catch(err => {
+            console.error("Fehler bei der OCR.Space API: " + err);
+        });
 }
 
 
@@ -232,8 +232,8 @@ function adjustFontSize(element) {
     const textLength = element.textContent.length;
 
     // Begrenze die Anzahl der Zeichen auf 15
-    if (textLength > 15) {
-        element.textContent = element.textContent.substring(0, 15);
+    if (textLength > 22) {
+        element.textContent = element.textContent.substring(0, 22);
     }
 
     // Berechne die Schriftgröße basierend auf der Länge des Textes
@@ -257,7 +257,7 @@ function evaluateSpaceData(data) {
         pricePerKilo = extractedPricePerKg;
     }
 
-    
+
     // Falls productWeight unbekannt ist, aber productPrice und pricePerKilo bekannt sind, berechne productWeight
     if ((!productWeight || productWeight === "Kein Gewicht gefunden") && pricePerKilo && productPrice) {
         // Extrahiere numerische Werte aus pricePerKilo und productPrice
