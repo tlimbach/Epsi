@@ -232,8 +232,8 @@ function adjustFontSize(element) {
     const textLength = element.textContent.length;
 
     // Begrenze die Anzahl der Zeichen auf 15
-    if (textLength > 22) {
-        element.textContent = element.textContent.substring(0, 22);
+    if (textLength > 25) {
+        element.textContent = element.textContent.substring(0, 25);
     }
 
     // Berechne die Schriftgröße basierend auf der Länge des Textes
